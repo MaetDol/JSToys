@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>3Dbox(정육면체)</title>
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+      *{margin:0;padding:0;transition: all .5s;
+        -webkit-touch-callout: none; /* iOS Safari */
+          -webkit-user-select: none; /* Safari */
+           -khtml-user-select: none; /* Konqueror HTML */
+             -moz-user-select: none; /* Firefox */
+              -ms-user-select: none; /* Internet Explorer/Edge */
+                  user-select: none; /* Non-prefixed version, currently
+                                        supported by Chrome and Opera */
+        margin:0; padding:0; box-sizing: border-box;
+        outline: 0;font-family: sans-serif;
+      }
+      html, body {width: 100%; height: 100%;}
+      body {
+        overflow: hidden;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: #EEE;
+        background: -webkit-linear-gradient( #FFF, #BBB );
+        background:    -moz-linear-gradient( #FFF, #BBB );
+        background:      -o-linear-gradient( #FFF, #BBB );
+        background:         linear-gradient( #FFF, #BBB );
+      }
+
+      .btn {
+        position: absolute;
+        display: inline-block;
+        top: 30px;
+        border: 0;
+        width: 65px;
+        height: 35px;
+        background: #4e85ba;
+        border-radius: 10px 10px 15px 15px;
+        border-bottom: 5px solid #214072;
+      }
+      .btn.reset {
+        left: 30px;
+      }
+      .btn.roll {
+        width: 75px;
+        position: relative;
+        display: block;
+        margin: 0 auto;
+      }
+      .btn.dontTouchMe {
+        width: 90px;
+        right: 30px;
+      }
+      .btn.reset:active,
+      .btn.dontTouchMe:active,
+      .btn.roll:active {
+        transform: translateY(5px);
+        border: 0;
+      }
+      .help * {
+        position: absolute;
+        z-index: 1000;
+      }
+      .help span {
+        word-break: keep-all;
+        text-align: center;
+        font-size: 2em;
+        color: #555;
+        top: 70%;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .help .finger {
+        font-size: 5em;
+        top: 45%;
+        left: 30%;
+        opacity: 0;
+        animation: how_to_use 4.5s ease-in-out infinite;
+        animation-delay: 1.5s;
+      }
+      @keyframes how_to_use {
+        0%{opacity:0; left:30%; font-size: 5em;}
+        15%{opacity:1; font-size: 5em;}
+
+        25%{font-size: 4em; left:30%;}
+        80%{font-size: 4em; left:70%;}
+
+        90%{opacity:1; font-size: 5em;}
+        100%{opacity:0;left:70%;}
+
+      }
+
+      .box_wrap{
+        opacity: 0.6;
+        border: 2px dashed rgba(0,0,0,0.3);
+        position: absolute;
+        top:50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        perspective: 500px;
+      }
+      .box, .box > div{width:200px;height:200px;}
+
+      /*6개의 면을 감싸고 있는 영역*/
+      .box_rotate {
+        position: relative;
+        transition: all .3s ease;
+        transform-style: preserve-3d;
+        transform: translate3d(0, 0, -100px); /* x, y, z */
+        transition: none;
+        transform-origin: center center -100px;
+      }
+
+      /*6개의 면*/
+      .box_rotate > div{
+        border-radius: 20px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: #FFF;
+        padding: 20px;
+      }
+
+      .box_rotate .front{
+        transform: rotate3d(0, 1, 0, 0deg) translate3d(0, 0, 100px);
+      }
+      .box_rotate .back{
+        transform: rotate3d(0, 1, 0, 180deg) translate3d(0, 0, 100px);
+      }
+      .box_rotate .top{
+        transform: rotate3d(1, 0, 0, 90deg) translate3d(0, 0, 100px);
+      }
+      .box_rotate .bottom{
+        transform: rotate3d(1, 0, 0, -90deg) translate3d(0, 0, 100px);
+      }
+      .box_rotate .left{
+        transform: rotate3d(0, 1, 0, -90deg) translate3d(0, 0, 100px);
+      }
+      .box_rotate .right{
+        transform: rotate3d(0, 1, 0, 90deg) translate3d(0, 0, 100px);
+      }
+
+      /* Dice */
+      .dot {
+        display:          block;
+        height:           40px;
+        width:            40px;
+        background:       #333;
+        border-radius:    50%;
+      }
+      .box > div {
+        display: flex;
+      }
+      .first {
+        justify-content: center;
+        align-items:     center;
+      }
+      .first .dot {
+        background:      #f00;
+      }
+
+      .second {
+        justify-content: space-between;
+        align-items:     center;
+      }
+
+      .third {
+        justify-content: space-around;
+      }
+      .third .dot:nth-child(2) {
+        align-self:      center;
+      }
+      .third .dot:nth-child(3) {
+        align-self:      flex-end;
+      }
+
+      .fourth {
+        align-content:   space-between;
+        flex-wrap:       wrap;
+      }
+      .fourth .column {
+        display:         flex;
+        justify-content: space-between;
+        flex-basis:      100%;
+      }
+
+      .fifth {
+        flex-wrap:       wrap;
+        align-content:   space-between;
+      }
+      .fifth .column {
+        justify-content: space-between;
+        display:         flex;
+        flex-basis:      100%;
+      }
+      .fifth .column:nth-child(2) {
+        justify-content: center;
+      }
+
+      .sixth {
+        flex-wrap:       wrap;
+        align-content:   space-between;
+      }
+      .sixth .column {
+        justify-content: space-between;
+        display:         flex;
+        flex-basis:      100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="help">
+      <i class="fa fa-hand-o-up finger" aria-hidden="true"></i>
+      <span>드래그 하여 주사위를 움직여 보세요.</span>
+    </div>
+
+    <div class="buttons">
+      <button class="btn reset" onclick="reset()">초기화</button>
+      <button class="btn roll" onclick="rollDice()">굴리기</button>
+      <button class="btn dontTouchMe" onclick="pressed()">멋진버튼</button>
+    </div>
+
+    <div class="box_wrap">
+      <div class="box box_rotate">
+        <div class="front first">
+          <span class="dot"></span>
+        </div>
+
+        <div class="top second">
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+
+        <div class="back third">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+       </div>
+
+        <div class="bottom fourth">
+          <div class="column">
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+           <div class="column">
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+
+        <div class="left fifth">
+          <div class="column">
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+          <div class="column">
+            <span class="dot"></span>
+          </div>
+          <div class="column">
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+
+        <div class="right sixth">
+          <div class="column">
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+          <div class="column">
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+          <div class="column">
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <script>
+      var body = document.querySelector('body')
+
+      var transitionRunning = false
+      var mouseUp = true
+
+      var vx = 0
+      var vy = 0
+      var vz = -100
+      var startX = 0
+      var startY = 0
+      var update_time = 0
+
+      window.addEventListener( "mousedown", hideHelper )
+
+      // 마우스를 누르기 시작하면..
+      body.onmousedown = function(event) {
+        if( tmpTimeout != undefined )
+          return
+
+        mouseUp = false
+        event = event || window.event
+        startX = event.clientX
+        startY = event.clientY
+
+        this.addEventListener( "mousemove", rotateBox )
+      }
+
+      // 마우스 휠 줌 인/아웃
+      body.addEventListener( "mousewheel", zoomBox )
+
+      // 마우스 클릭해제 시
+      body.addEventListener( "mouseup", () => {
+        mouseUp = true
+        this.removeEventListener( "mousemove", rotateBox )
+      })
+
+      body.addEventListener( "mouseout", function(e) {
+        e = e || window.event
+        var from = e.relatedTarget || e.toElement
+        if( !from || from.nodeName == "HTML" ) {
+          mouseUp = true
+          body.removeEventListener( "mousemove", rotateBox )
+        }
+      })
+
+      var tmpTimeout = undefined
+      var reverse = 1
+      var dice = document.querySelector( '.box_rotate' )
+      function rollDice() {
+
+        clearTimeout( tmpTimeout )
+        tmpTimeout = undefined
+        reverse *= -1
+
+        var makeRightAngle = function(deg) {
+          var d = deg % 90
+          var roundResult = ( d > 45 )? 90:0
+          return deg-d + roundResult
+        }
+
+        var randomAngle = function(c) {
+          return (Math.random()*2 +2)*360 + Math.random()*360 + c
+        }
+
+        var rx = randomAngle(vy)
+        var ry = randomAngle(vx)
+
+        rx = makeRightAngle( rx ) * reverse
+        ry = makeRightAngle( ry ) * reverse
+        console.log( rx+","+ry)
+
+        var jumpCount = ( rx > ry )? rx/360 : ry/360
+        jumpCount    -= Math.floor( Math.random()*3 )
+
+        transitionRunning = true
+        vy = rx % 360
+        vx = ry % 360
+        dice.style.transition = "all 2.5s ease-out"
+        dice.style.transform  = "rotateX("+ rx +"deg) rotateY("+ ry*-1 +"deg) translate3d(0,"+ 0 +"px, -100px)"
+
+        tmpTimeout = setTimeout( ()=> {
+          dice.style.transition = "none"
+          dice.style.transform  = "rotateX("+ vy +"deg) rotateY("+ vx*-1 +"deg) translate3d(0,0,-100px)"
+          tmpTimeout = undefined
+        }, 2510 )
+      }
+
+      // 도움말 숨기기
+      function hideHelper() {
+        setTimeout( ()=> {
+          var help = document.querySelector('.help')
+          help.style.opacity = "0"
+          window.removeEventListener( "mousedown", hideHelper )
+        }, 1200 )
+      }
+
+
+      var btnDurability = 6
+      var slope = 20
+      var btn
+      function pressed(e) {
+        if( btn === undefined )
+          if( e === undefined )
+            btn = document.querySelector('.dontTouchMe')
+          else if( e.style === undefined ) {
+            btn = e.target
+          }
+
+        btnDurability--
+        if( btnDurability > 4 )
+          return
+        if( btnDurability > 0 ) {
+          btn.style.transform = "rotate("+slope+"deg)"
+          slope += 22.5
+        }
+        if( btnDurability <= 0 ) {
+          for( var i=1; i <= window.innerWidth+500; i*=1.8 )
+            btn.style.transform = "translateY("+i+"px)"
+
+          setTimeout( ()=>{ shake(8) }, 1000 )
+        }
+      }
+
+      function shake( magnitude=4, duration=16 ) {
+        var body = document.querySelector('body')
+        var randomInt = ( min, max ) => {
+          return Math.floor( Math.random() * (max-min+1) + min )
+        }
+
+        if( duration > 0 ) {
+          var vx = randomInt( -magnitude, magnitude )
+          var vy = randomInt( -magnitude, magnitude )
+          body.style.transition = "none"
+          body.style.transform = "translate("+vx+"px,"+vy+"px)"
+
+          requestAnimationFrame( ()=> { shake( magnitude * 0.75, duration-1 ) })
+        }
+      }
+
+      function reset() {
+        vx = 0
+        vy = 0
+        vz = -100
+        startX = 0
+        startY = 0
+        update_time = 0
+        mouseUp = true
+        var box_rotate = document.querySelector( '.box_rotate' )
+        box_rotate.style.transition = "all 1s ease-out"
+        box_rotate.style.transform = "rotateX(0deg) rotateY(0deg) translate3d(0, 0,-100px)"
+        setTimeout( function() {
+          box_rotate.style.transition = "none" }, 1100 )
+      }
+
+      function zoomBox(e) {
+        vz += e.deltaY / 5
+        var box_rotate = document.querySelector( '.box_rotate' )
+        box_rotate.style.transform = "rotateX("+ vy +"deg) rotateY("+ vx*-1 +"deg) translate3d(0, 0,"+ vz +"px)"
+      }
+
+      function rotateBox(event) {
+        if( mouseUp === true )
+          return
+
+        event = event || window.event
+        var nowX = event.clientX
+        var nowY = event.clientY
+
+        vx = (vx + (startX - nowX) * 0.1) % 360
+        vy = (vy + (startY - nowY) * 0.1) % 360
+
+        update_time++
+        if( update_time > 2 ) {
+          startY = nowY
+          startX = nowX
+          update_time = 0
+        }
+
+        var box_rotate = document.querySelector( '.box_rotate' )
+        box_rotate.style.transform = "rotateX("+ vy +"deg) rotateY("+ vx*-1 +"deg) translate3d(0, 0,"+ vz +"px)"
+      }
+    </script>
+  </body>
+</html>
