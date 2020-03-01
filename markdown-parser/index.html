@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Markdown parser</title>
+    <link rel="stylesheet" href="atom-one-dark-reasonable.css">
+    <script src="highlight.pack.js"></script>
+    <script src="markdownParser.js"></script>
+    <style>
+      html, body {
+        overflow-x: hidden;
+      }
+      textarea {
+        width: 100%;
+        height: 320px;
+        margin-bottom: 40px;
+        padding: 16px;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="textarea-wrapper">
+      <textarea class="markdown" spellcheck="false">
+=make-to-pixel
+
+Lorem ipsum dolor sit amet, con`s`ectetur `adipisicing` elit,
+sed do e`iusmod` tempor incididunt ut labore et dolore magna aliqua.
+```javascript
+const test = 35
+const reg  = new RegExp()
+let string = 'ABCDEFG'
+console.log(test ** 6)
+```
+
+Ut enim ad minim veniam,
+\
+quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+Excepteur sint occaecat cupidatat non proident,
+sunt in culpa qui officia deserunt mollit anim id est laborum.
+\
+Lorem ipsum dolor sit amet,
+consectetur [adipisicing](https://linkfor-some-where.com) elit,
+sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+\
+### h3 제목
+1. 1번 리스트
+2. 2번 리스트
+3. 3번 리스트
+4. 4번 리스트
+\
+#### h4 제목
+- 리스트항목
+- 리스트항목
+- 리스트항목
+      </textarea>
+    </div>
+
+    <div class="render-wrapper"></div>
+    
+    <script>
+      const markdown      = document.querySelector('.textarea-wrapper textarea')
+      const renderWrapper = document.querySelector('.render-wrapper')
+      const codeBlock     = document.getElementsByTagName('pre')
+      markdown.addEventListener( 'keyup', _=> {
+        render( markdown, renderWrapper )
+      })
+      render( markdown, renderWrapper )
+      
+      function render(e, re) {
+        const htmlContent = parseMarkdown( e.value )
+        re.innerHTML = htmlContent
+        hljs.highlightBlock( codeBlock[0] )
+      }
+    </script>
+  </body>
+</html>
