@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 121" fill="none">
+  <path d="M36 114H24L51 6H57H63H69L96 114H84L60 18L36 114Z" fill="#F2E0D0" stroke="black" stroke-linejoin="round"/>
+  <path d="M40.2539 97H28.255L27.5 100H39.5L40.2539 97Z" fill="#DFA58C" style="mix-blend-mode:darken"/>
+  <path d="M91.5 97H80L80.5 100H92.3495L91.5 97Z" fill="#DFA58C" style="mix-blend-mode:darken"/>
+  <path d="M69 6H51L49.5 13H70.5L69 6Z" fill="#DFA58C" style="mix-blend-mode:darken"/>
+  <path d="M55 109L54 91H66L65 109H55Z" fill="#DFA58C" stroke="black" stroke-linejoin="round"/>
+  <path d="M102 85H18V97H102V85Z" fill="#F2E0D0" stroke="black" stroke-linejoin="round"/>
+  <path d="M102 96H18V97H102V96Z" fill="#DFA58C" style="mix-blend-mode:darken"/>
+  <path d="M102 85H101V97H102V85Z" fill="#DFA58C" style="mix-blend-mode:darken"/>
+  <path d="M96 13H24V85H96V13Z" fill="white" stroke="black" stroke-linejoin="round"/>
+  <path d="M54 13V1H66V13H54Z" fill="#F2E0D0" stroke="black" stroke-linejoin="round"/>
+  <path d="M66 12H54V13H66V12Z" fill="#DFA58C" style="mix-blend-mode:darken"/>
+</svg>
