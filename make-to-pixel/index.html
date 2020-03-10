@@ -2,42 +2,38 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>픽셀화!</title>
-    <style>
-      html, body { width: 100%; height: 100%; margin:0; padding:0; }
-      body { background: #e9ded5; }
-      #wrap { text-align: center; }
-      #canvas {
-        display: block;
-        margin: 0 auto 16px auto;
-      }
-      input[type=range]::-webkit-slider-runnable-track {
-        border: 1px solid #414141;
-        background: rgba( 0, 0, 0, 0.1 );
-      }
-    </style>
-    <script src="makeToPixel.js"></script>
+    <title>픽셀아트로 만들기!</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
   </head>
   <body>
-    <div id="wrap">
-      <span>도트화 시킬 이미지 파일을 업로드하세요!</span><br>
-      <input id="file" accept="image/*" type="file">
-
-      <br><br>
-
-      <span>도트 크기</span>
-      <input id="sizeRange" type="range" min="5" max="30" step="1" value="8" onchange="updateSize(this.value)">
-      <br>
-      <label><input type="radio" name="shape" onchange="shape='circle';drawPixelImage()" checked>원</label>
-      <label><input type="radio" name="shape" onchange="shape='square';drawPixelImage()">사각형</label>
-
-      <br><br>
-
-      <span>도트 간격</span>
-      <input id="gapRange" type="range" min="0" max="10" step="1" value="1" onchange="updateGap(this.value)">
-
-      <canvas id="canvas"></canvas>
-
+    
+    <div class="canvas-wrapper">
+      <div class="padding">
+        <img class="canvas-frame" src="canvas_with_easel.svg" alt="canvas with easel image">
+        <canvas id="canvas"></canvas>
+      </div>
     </div>
+    
+    <div class="text-wrapper">
+      <div class="input-file">
+        <input id="file" accept="image/*" type="file">
+        <label for="file">이미지를 끌어다 놓거나<br>여기를 클릭하세요</label>
+      </div>
+      <div class="shape">
+        <label><input type="radio" name="shape" onchange="setToCircle()" checked>원</label>
+        <label><input type="radio" name="shape" onchange="setToSquare()">사각형</label>
+      </div>
+      <div class="size">
+        <p>도트 크기</p>
+        <input id="sizeRange" type="range" min="5" max="30" step="1" value="8" onchange="updateSize(this.value)">
+      </div>
+      <div class="gap">
+        <p>도트 간격</p>
+        <input id="gapRange" type="range" min="0" max="10" step="1" value="1" onchange="updateGap()">
+      </div>
+      <canvas class="image-preview"></canvas>
+    </div>
+    
   </body>
 </html>
