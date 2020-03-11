@@ -4,10 +4,18 @@ class Shape {
       for( let attr in i ) {
         this[attr] = i[attr]
       }
+      
+      if( i.color == undefined ) {
+        this.color = 'rgba(0,0,0,0)'
+      }
+      if( typeof i.color === 'string' ) {
+        this.setColor( this.color )
+      }
+      
   
       if( i.doFill === Shape.FILL ) {
         this.fillOrStroke = ctx => {
-          ctx.fillStyle = objectToRgba( this.color )
+          ctx.fillStyle = this.color
           ctx.fill()
         }
       } else {
@@ -15,17 +23,11 @@ class Shape {
           this.lineCap = 'butt'
         }
         this.fillOrStroke = ctx => { 
-          ctx.strokeStyle = objectToRgba( this.color )
+          ctx.strokeStyle = this.color
           ctx.lineWidth   = this.lineWidth
           ctx.lineCap     = this.lineCap
           ctx.stroke() 
         }
-      }
-      
-      if( i.color == undefined ) {
-        this.color = {r:0, g:0, b:0, a:0}
-      } else {
-        this.setColor( i.color )
       }
       
       if( i.depth == undefined ) {
@@ -121,7 +123,8 @@ class Shape {
     }
     
     setColor( str ) {
-      this.color = stringColorToObject( str )
+      this.color = str
+      this.colorObject = stringColorToObject( str )
     }
   }
   Shape.FILL       = 4
@@ -209,7 +212,7 @@ class Shape {
       super(i)
       if( i.doFill === Shape.FILL ) {
         this.fillOrStroke = ctx => {
-          ctx.fillStyle = objectToRgba( this.color )
+          ctx.fillStyle = this.color
           ctx.fillText( this.text, this.x, this.y )
         }
       } else {
@@ -217,7 +220,7 @@ class Shape {
           this.lineCap = 'butt'
         }
         this.fillOrStroke = ctx => { 
-          ctx.strokeStyle = objectToRgba( this.color )
+          ctx.strokeStyle = this.color
           ctx.lineWidth   = this.lineWidth
           ctx.lineCap     = this.lineCap
           ctx.strokeText( this.text, this.x, this.y )
@@ -681,10 +684,11 @@ class Shape {
       }
     }
   
+    const centerCoordinates = d.canvas.self.width/2
     const sectors = []
     const base = {
-      x:      d.canvas.self.width/2, 
-      y:      d.canvas.self.width/2,
+      x:      centerCoordinates, 
+      y:      centerCoordinates,
       doFill: Shape.FILL
     }
     // Create sectors
@@ -727,29 +731,26 @@ class Shape {
         ...base,
         depth: 2,
         r: radius,
-        color: bgColor,
-        shadow: {
-          color:   shadowColor,
-          blur:    16,
-          offsetX: 2,
-          offsetY: 2
-        }
+        color: bgColor
       })
-      // let gradient = ctx.createRadialGradient( 
-      //   this.x, this.y, 0,
-      //   this.x, this.y, this.r
-      //   )
-      //   const blur = 16
-      //   gradient.addColorStop(0, 'transparent')
-      //   gradient.addColorStop((this.r - blur*2/4*3) / this.r, `rgba(0,0,0,${0.2*0.001})`)
-      //   gradient.addColorStop((this.r - blur*2/4*2) / this.r, `rgba(0,0,0,${0.2*0.05})`)
-      //   gradient.addColorStop((this.r - blur*2/4) / this.r,   `rgba(0,0,0,${0.2*0.5})`)
-      //   gradient.addColorStop(1, 'rgba(0,0,0,0.1)')
-        
-      //   ctx.fillStyle = gradient
-        
-      //   ctx.arc( this.x, this.y, this.r, 0, Math.PI*2)
-      //   ctx.fill()
+    
+      let gradient = d.canvas.context.createRadialGradient( 
+        centerCoordinates, centerCoordinates, 0,
+        centerCoordinates, centerCoordinates, radius
+      )
+      const blur = 16
+      gradient.addColorStop(0, 'transparent')
+      gradient.addColorStop((radius - blur*2/4*3) / radius, `rgba(0,0,0,${0.2*0.001})`)
+      gradient.addColorStop((radius - blur*2/4*2) / radius, `rgba(0,0,0,${0.2*0.05})`)
+      gradient.addColorStop((radius - blur*2/4) / radius,   `rgba(0,0,0,${0.2*0.5})`)
+      gradient.addColorStop(1, 'rgba(0,0,0,0.1)')
+      
+      d.canvas.createCircle({
+        ...base,
+        depth: 3,
+        r: radius,
+        color: gradient
+      })
     }
   
     d.canvas.draw()
