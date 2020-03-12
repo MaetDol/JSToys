@@ -38,8 +38,6 @@ class Shape {
         this.shadow.color = stringColorToObject( i.shadow.color )
       }
       
-      this.animates = {}
-      this.animateAttrs = {}
     }
   
     beforeDraw( ctx ) {
@@ -67,61 +65,6 @@ class Shape {
       return false
     }
     
-    update() {
-      if( this.hasAnimate() ) {
-        return
-      }
-      
-      for( let attr in this.animates )  {
-        let ani = this.animates[attr]
-        
-        if( isFinite( this[attr] )) {
-          this[attr] += ani.vector
-        } else if( attr == 'color') {
-          this.color.r += ani.vector.r
-          this.color.g += ani.vector.g
-          this.color.b += ani.vector.b
-          this.color.a += ani.vector.a
-        }
-        ani.leftTime -= 16
-        if( ani.leftTime < 0 ) {
-          this[attr] = ani.targetVal
-          delete this.animates[attr]
-        }
-      }
-    }
-  
-    hasAnimate() {
-      return this.animates.length > 0
-    }
-    
-    isExistsAnimate( name ) {
-      return this.animateAttrs[name] != undefined ? true : false
-    }
-    
-    animate( data ) {
-      let perFrame = (data.time / Shape.ANIME_FPS)
-      if( isFinite( data.value ) && isFinite( this[data.attr] )) {
-        data.vector = data.value - this[data.attr]
-        data.vector = data.vector / perFrame
-      } else if( data.attr == 'color') {
-        data.value = stringColorToObject( data.value )
-        data.vector = {}
-        data.vector.r = (data.value.r - this.color.r) / perFrame
-        data.vector.g = (data.value.g - this.color.g) / perFrame
-        data.vector.b = (data.value.b - this.color.b) / perFrame
-        data.vector.a = (data.value.a - this.color.a) / perFrame
-      }
-  
-      this.animates[data.attr] = {
-        attr:      data.attr,
-        time:      data.time,
-        leftTime:  data.time,
-        targetVal: data.value,
-        vector:    data.vector
-      }
-    }
-    
     setColor( str ) {
       this.color = str
       this.colorObject = stringColorToObject( str )
@@ -129,7 +72,6 @@ class Shape {
   }
   Shape.FILL       = 4
   Shape.STROKE     = 5
-  Shape.ANIME_FPS  = 16
   
   class Sector extends Shape {
   
@@ -143,6 +85,7 @@ class Shape {
     }
   
     draw( ctx ) {
+
       ctx.moveTo( this.x, this.y )
       ctx.arc(
         this.x, this.y, this.r,
@@ -411,7 +354,6 @@ class Shape {
       this.self    = canvas
       this.context = canvas.getContext('2d')
       this.objects = []
-      this.doAnimate = false
     }
   
     setSize(w, h) {
@@ -468,10 +410,10 @@ class Shape {
           if( obj.display === false ) {
             continue
           }
+
           obj.beforeDraw( this.context )
-          obj.draw( this.context )
-          obj.afterDraw( this.context )
-          obj.update()
+          obj.draw(       this.context )
+          obj.afterDraw(  this.context )
         }
       }
       if( this.doAnimate ) {
@@ -723,26 +665,29 @@ class Shape {
           font: {...d.font}
         })
     tooltip.hide()
+
     // Optional donut
+    let donutCircle = {isCollision: _=> false}
     if( d.donut || d.doughnut ) {
       const donut = d.donut || d.doughnut
-      const radius = typeof donut === 'number' ? d : r / 2
-      d.canvas.createCircle({
+      const radius = typeof donut === 'number' ? d : r / 1.618
+      // donut hole
+      let donutId = d.canvas.createCircle({
         ...base,
         depth: 2,
         r: radius,
         color: bgColor
       })
+      donutCircle = d.canvas.getObject( donutId )
     
+      // hole shadow
       let gradient = d.canvas.context.createRadialGradient( 
         centerCoordinates, centerCoordinates, 0,
         centerCoordinates, centerCoordinates, radius
       )
       const blur = 16
       gradient.addColorStop(0, 'transparent')
-      gradient.addColorStop((radius - blur*2/4*3) / radius, `rgba(0,0,0,${0.2*0.001})`)
-      gradient.addColorStop((radius - blur*2/4*2) / radius, `rgba(0,0,0,${0.2*0.05})`)
-      gradient.addColorStop((radius - blur*2/4) / radius,   `rgba(0,0,0,${0.2*0.5})`)
+      gradient.addColorStop((radius - blur*1.2) / radius, `rgba(0,0,0,0.02)`)
       gradient.addColorStop(1, 'rgba(0,0,0,0.1)')
       
       d.canvas.createCircle({
@@ -752,8 +697,6 @@ class Shape {
         color: gradient
       })
     }
-  
-    d.canvas.draw()
     
     let getConflictSector = (x, y) => {
       for( let i in sectors ) {
@@ -764,15 +707,22 @@ class Shape {
       return null
     }
     let hoverEvent = (e) => {
-      if( !pieArea.isCollision( e.offsetX, e.offsetY ) ) {
+      const x = e.offsetX
+      const y = e.offsetY
+
+      const isHoveringPieChart =
+        pieArea.isCollision( x, y ) 
+        && !donutCircle.isCollision( x, y )
+        
+      if( !isHoveringPieChart ) {
         if( tooltip.display ) {
           tooltip.hide()
           d.canvas.draw()
         }
         return
       }
-      tooltip.setPosition( e.offsetX, e.offsetY )
-      let s = getConflictSector( e.offsetX, e.offsetY )
+      tooltip.setPosition( x, y )
+      let s = getConflictSector( x, y )
       if( s != null ) {
         tooltip.setText( s.value )
         tooltip.setLabel( s.label )
@@ -782,8 +732,8 @@ class Shape {
         d.canvas.draw()
       }
     }
-    //tooltip.hide()
     
+    d.canvas.draw()
     d.canvas.self.addEventListener('mousemove',  hoverEvent )
     
     return {sectors, pieArea}
