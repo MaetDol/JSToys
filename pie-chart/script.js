@@ -645,14 +645,14 @@ class Shape {
   
     // Area for collision optimize. is it worth?
     // also shadow
+    const shadow = { offsetX:2, offsetY: 2 }
     let pieAreaId = d.canvas.createCircle({
       ...base, r: r-2,
       color:      bgColor,
       shadow: {
+        ...shadow,
         color:    shadowColor,
-        blur:     16,
-        offsetX:  2,
-        offsetY:  2
+        blur:     16
       }
     }),
         pieArea = d.canvas.getObject( pieAreaId ),
@@ -670,7 +670,7 @@ class Shape {
     let donutCircle = {isCollision: _=> false}
     if( d.donut || d.doughnut ) {
       const donut = d.donut || d.doughnut
-      const radius = typeof donut === 'number' ? d : r / 1.618
+      const radius = typeof donut === 'number' ? donut : r / 1.618
       // donut hole
       let donutId = d.canvas.createCircle({
         ...base,
@@ -683,13 +683,14 @@ class Shape {
       // hole shadow
       let gradient = d.canvas.context.createRadialGradient( 
         centerCoordinates, centerCoordinates, 0,
-        centerCoordinates, centerCoordinates, radius
+        centerCoordinates + shadow.offsetX, centerCoordinates + shadow.offsetY, radius
       )
-      const blur = 16
-      gradient.addColorStop(0, 'transparent')
-      gradient.addColorStop((radius - blur*1.2) / radius, `rgba(0,0,0,0.02)`)
-      gradient.addColorStop(1, 'rgba(0,0,0,0.1)')
-      
+      const blur = 12
+      gradient.addColorStop( 0, 'transparent')
+      gradient.addColorStop( (radius - blur*1.5) / radius, `transparent`)
+      gradient.addColorStop( (radius - blur*1.2) / radius, `rgba(0,0,0,${0.1*0.1})`)
+      gradient.addColorStop( (radius - blur/2) / radius, `rgba(0,0,0,${0.1*0.6})`)
+      gradient.addColorStop( 1, 'rgba(0,0,0,0.12)')
       d.canvas.createCircle({
         ...base,
         depth: 3,
