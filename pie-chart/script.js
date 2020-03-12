@@ -34,7 +34,7 @@ class Shape {
       this.depth = 0
     }
     
-    if( i.shadow != undefined ) {
+    if( i.shadow !== undefined && i.shadow !== false ) {
       this.shadow.color = stringColorToObject( i.shadow.color )
     }
     
@@ -195,6 +195,11 @@ class Tooltip extends Shape {
             offsetY: 2
           }
         }
+
+    let copyShadow = _=> ({...base.shadow})
+    if( i.shadow === false ) {
+      copyShadow = _=> undefined
+    }
     
     if( i.font == undefined ) {
       i.font    = {}
@@ -211,26 +216,30 @@ class Tooltip extends Shape {
 
     // tooltip point
     id = i.canvas.createCircle({
-      ...base, shadow: {...base.shadow},
+      ...base, 
+      shadow: copyShadow(),
       r: 6
     })
     this.tooltip.point = i.canvas.getObject(id)
     
     // tooltip extension line
     id = i.canvas.createRect({
-      ...base, shadow: {...base.shadow}
+      ...base, 
+      shadow: copyShadow()
     })
     this.tooltip.line = i.canvas.getObject(id)
     
     // tooltip box
     id = i.canvas.createRect({
-      ...base, shadow: {...base.shadow}
+      ...base, 
+      shadow: copyShadow()
     })
     this.tooltip.box = i.canvas.getObject(id)
     
     // tooltip text
     id = i.canvas.createText({
-      ...base, shadow: {...base.shadow},
+      ...base, 
+      shadow: copyShadow(),
       color: "#ebebf3",
       font: {
         family: this.font.family,
@@ -241,14 +250,16 @@ class Tooltip extends Shape {
     
     // tooltip label background
     id = i.canvas.createRect({
-      ...base, shadow: {...base.shadow},
+      ...base, 
+      shadow: copyShadow(),
       color: "rgba(248,248,253,0.8)"
     })
     this.tooltip.labelBackground = i.canvas.getObject(id)
     
     // tooltip label
     id = i.canvas.createText({
-      ...base, shadow: {...base.shadow},
+      ...base,
+      shadow: copyShadow(),
       color: "rgb(33,33,48)",
       font: {
         family: this.font.family,
@@ -546,8 +557,6 @@ function toPositiveRadian( rad ) {
 }
 
 function generatePieChart(d) {
-  const bgColor     = '#FFF'
-  const shadowColor = 'rgba(0,0,0,0.3)'
 
   let pies       = [],
       dataSum    = 0,
@@ -645,15 +654,23 @@ function generatePieChart(d) {
 
   // Area for collision optimize. is it worth?
   // also shadow
-  const shadow = { offsetX:2, offsetY: 2 }
+  const bgColor       = '#FFF'
+  const shadowColor   = 'rgba(0,0,0,0.3)'
+  const shadowOffsetX = 2
+  const shadowOffsetY = 2
+  let generateShadow  = _=> ({
+    offsetX: shadowOffsetX,
+    offsetY: shadowOffsetY,
+    color: shadowColor,
+    blur: 16
+  })
+  if( d.shadow === false ) {
+    generateShadow = _=> undefined
+  }
   let pieAreaId = d.canvas.createCircle({
     ...base, r: r-2,
     color:      bgColor,
-    shadow: {
-      ...shadow,
-      color:    shadowColor,
-      blur:     16
-    }
+    shadow: generateShadow()
   }),
       pieArea = d.canvas.getObject( pieAreaId ),
       tooltip = new Tooltip({
@@ -662,6 +679,7 @@ function generatePieChart(d) {
         y:0, 
         text:'', 
         label:'',
+        shadow: d.shadow,
         font: {...d.font}
       })
   tooltip.hide()
@@ -681,24 +699,27 @@ function generatePieChart(d) {
     donutCircle = d.canvas.getObject( donutId )
   
     // hole shadow
-    let gradient = d.canvas.context.createRadialGradient( 
-      base.x, base.y, 0,
-      base.x + shadow.offsetX, base.y + shadow.offsetY, radius
-    )
-    const blur = 12
-    gradient.addColorStop( 0, 'transparent')
-    gradient.addColorStop( (radius - blur*1.5) / radius, `transparent`)
-    gradient.addColorStop( (radius - blur*1.2) / radius, `rgba(0,0,0,${0.1*0.1})`)
-    gradient.addColorStop( (radius - blur/2) / radius, `rgba(0,0,0,${0.1*0.6})`)
-    gradient.addColorStop( 1, 'rgba(0,0,0,0.12)')
-    d.canvas.createCircle({
-      ...base,
-      depth: 3,
-      r: radius,
-      color: gradient
-    })
-  }
-  
+    let gradient = 'transparent'
+    if( d.shadow !== false ) {
+      gradient = d.canvas.context.createRadialGradient( 
+        base.x, base.y, 0,
+        base.x + shadowOffsetX, base.y + shadowOffsetY, radius
+        )
+        const blur = 12
+        gradient.addColorStop( 0, 'transparent')
+        gradient.addColorStop( (radius - blur*1.5) / radius, `transparent`)
+        gradient.addColorStop( (radius - blur*1.2) / radius, `rgba(0,0,0,${0.1*0.1})`)
+        gradient.addColorStop( (radius - blur/2) / radius, `rgba(0,0,0,${0.1*0.6})`)
+        gradient.addColorStop( 1, 'rgba(0,0,0,0.12)')
+        d.canvas.createCircle({
+          ...base,
+          depth: 3,
+          r: radius,
+          color: gradient
+        })
+      }
+    }
+      
   let getConflictSector = (x, y) => {
     for( let i in sectors ) {
       if( sectors[i].isCollision( x, y ) ) {
