@@ -22,68 +22,47 @@
   <script>
         
     // Pie test
-    let chartCanvases = [],
-        body   = document.querySelector('body'),
-        colors = [
-            {from:'#151933', to:'#c3d5da'}, // You can use color-range
-            '#151933' // Or just start color
-        ]
+    const body = document.querySelector('body')
+    const chartCanvases = []
 
-    for( let i=0; i < colors.length; i++ ) {
-        chartCanvases[i] = newCanvas()
-
-        generatePieChart({
-            values: [
-                {Incheon: 17},
-                {Busan: 11},
-                {Jinju: 7},
-                {Seoul: 5},
-                {Jeju: 2},
-                {Changwon: 1}
-            ],
-            canvas: chartCanvases[i],
-            color:  colors[i],
-            radius: 120-(i*20),
-            font:   {size:30-(i*10)},
-            showPercentage: true && i%2==1
-        })
-        chartCanvases[i].draw()
-    }
-    
-    // Generate chart with minimum value
+    // Generate chart with minimum params
     // 1. values
     // 2. color( you can skip color but just showing white circle. )
     // 3. canvas
     // then canvas.draw()
-    chartCanvases.push( newCanvas() )
-    let lastIdx = chartCanvases.length - 1
+    let c = newCanvas()
+    chartCanvases.push(c)
     generatePieChart({
         values: [
             {'Abc': 3 },
             {'Def': 37 }
         ],
         color: '#FFF',
-        canvas: chartCanvases[lastIdx]
+        canvas: c
     })
-    chartCanvases[lastIdx].draw()
 
-    // You can set point color to specific sector
-    chartCanvases.push( newCanvas() )
-    lastIdx = chartCanvases.length - 1
+    // Common usage
+    c = newCanvas()
+    chartCanvases.push(c)
     generatePieChart({
         values: [
-            {'Abc': 3 },
-            {'Def': {value:12, color:'#fb7979'}},
-            {'Geh': 37 }
+            {Incheon: 17},
+            {Busan: 11},
+            {Jinju: 7},
+            {Seoul: 5},
+            {Jeju: {value:2, color:'#f18101'}},
+            {Changwon: 1}
         ],
-        color: '#151933',
-        canvas: chartCanvases[lastIdx]
+        canvas: c,
+        color:  {from:'#151933', to:'#c3d5da'},
+        radius: 120,
+        font:   {size:20},
+        showPercentage: true
     })
-    chartCanvases[lastIdx].draw()
 
-    // Pie with specific color. and donut/doughnut
-    chartCanvases.push( newCanvas() )
-    lastIdx = chartCanvases.length - 1
+    // donut and doughnut both are can use. ture or number of radius
+    c = newCanvas()
+    chartCanvases.push(c)
     generatePieChart({
         values: [
             {'Region A': { color: '#105a67', value: 3.6 }},
@@ -91,9 +70,11 @@
             {'Other'   : { color: '#ededed', value: 58.8 }}
         ],
         donut: true,
-        canvas: chartCanvases[lastIdx]
+        canvas: c
     })
-    chartCanvases[lastIdx].draw()
+    
+    // Draw each canvas
+    chartCanvases.forEach( c => c.draw() )
 
     function newCanvas() {
         const canvas = new Canvas()
