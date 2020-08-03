@@ -57,10 +57,10 @@ class FileManager {
       if( uint8Array === null ) {
         return null;
       }
-      const stringify = this.textDecoder.decode( uint8Array );
-      const queryIndex = stringify.indexOf( query );
-      if( queryIndex > -1 ) {
-        const uselessString = stringify.slice( 0, queryIndex );
+      const stringify = this.decodeUint8( uint8Array );
+      const match = stringify.match( query );
+      if( match !== null ) {
+        const uselessString = stringify.slice( 0, match.index );
         const resultPosition = this.sizeof( uselessString ) + this.cursor;
         this.cursor = resultPosition + this.sizeof( query );
         return { 
@@ -74,35 +74,31 @@ class FileManager {
 
   async nextLine() {
     
-    let buffers = [];
-    let i = 0;
+    let size = this.BUF_SIZE;
     while( true ) {
       
-      const uint8Array = await this.readBySize( this.BUF_SIZE ); 
+      const uint8Array = await this.readBySize( size ); 
       if( uint8Array === null ) {
         return null;
       }
 
       const sliced = this.sliceUint8ByCharCode( uint8Array, this.NEW_LINE );
-      buffers[i] = sliced.array;
       const isEndOfLine = sliced.end !== -1;
       if( isEndOfLine ) {
         this.cursor += sliced.end + 1;
-        break;
+        return uint8Array.slice( 0, sliced.end );
       }
 
-      const isLastLine = uint8Array.length < this.BUF_SIZE;
+      const isLastLine = uint8Array.length < size;
       if( isLastLine ) {
         this.cursor += uint8Array.length;
-        buffers[i] = uint8Array;
-        break;
+        return uint8Array;
       }
 
-      this.cursor += this.BUF_SIZE;
-      i++;
+      size += this.BUF_SIZE;
     }
 
-    return new Uint8Array( ...buffers );
+    return null;
   }
 
   lastIndexOf( array, value, start ) {
@@ -118,25 +114,23 @@ class FileManager {
 
   async previousLine() {
     
-    let buffers = [];
-    let i = 0;
     while( this.cursor >= 0 ) {
 
       this.cursor -= this.BUF_SIZE;
       const uint8Array = await this.readBySize( this.BUF_SIZE );
       if( uint8Array === null ) {
-        return null;
+        break;
       }
       const lastIndex = this.lastIndexOf( uint8Array, this.NEW_LINE );
       if( lastIndex != -1 ) {
         let cursor = this.cursor;
         this.cursor += lastIndex + 1;
-        const prevLine = await this.nextLins();
+        const prevLine = await this.nextLine();
         this.cursor = cursor + lastIndex;
         return prevLine;
       }
     }
-
+    this.cursor = 0;
     return null;
   }
 
