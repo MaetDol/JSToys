@@ -1,6 +1,7 @@
 const input = document.querySelector('input');
 input.addEventListener('change', upload);
 const fm = new FileManager();
+const em = new ExplorManager( fm );
 
 function upload(e) {
   fm.file = e.target.files[0];
