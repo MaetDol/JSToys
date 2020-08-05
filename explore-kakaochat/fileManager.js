@@ -7,6 +7,7 @@ class FileManager {
 
     this.textDecoder = new TextDecoder();
     this._cursor = 0;
+    this.startFilePosition = 0;
     this.initialCursorPosition = 0;
   }
 
@@ -51,6 +52,7 @@ class FileManager {
     this.cursor = 0;
     this._file = newFile;
     this.initialCursorPosition = this.isUTF8() ? this.UTF8_SIGNATURE.length : 0;
+    this.startFilePosition = this.initialCursorPosition;
   }
 
   get file() {
@@ -147,7 +149,7 @@ class FileManager {
   async previousLine() {
     
     let cursorEnd = this.cursor;
-    while( this.cursor >= 0 ) {
+    while( this.cursor > this.startFilePosition ) {
 
       this.cursor -= this.BUF_SIZE;
       const uint8Array = await this.readBySize( cursorEnd - this.cursor );
@@ -157,7 +159,7 @@ class FileManager {
       const lastIndex = this.lastIndexOf( uint8Array, this.NEW_LINE );
       const onlyHasNewline = uint8Array.length === 0 && lastIndex === 0;
       const startWithNewline = lastIndex === uint8Array.length -1 ;
-      const isFoundNewline = (lastIndex !== 0 && !startWithNewline) || onlyHasNewline ;
+      const isFoundNewline = (lastIndex !== -1 && !startWithNewline) || onlyHasNewline ;
       if( startWithNewline ) {
         cursorEnd--;
       }
