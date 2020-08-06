@@ -29,6 +29,12 @@ class ExplorManager {
     if( !useRegExp ) {
       chat = this.escapeRegExp( chat );
     }
+    let withoutTimestamp = '';
+    if( chat ) {
+      const defaultDateSet = `\d{4}년 \d{1,2}월 \d{1,2}일`;
+      withoutTimestamp = `|(.*\\n(?!${defaultDateSet}))+.*${chat}`;
+    }
+
     if( user ) {
       user = this.escapeRegExp( user );
     } else {
@@ -36,7 +42,9 @@ class ExplorManager {
     }
 
     return new RegExp(
-      `^${year}년 ${month}월 ${date}일 ${amOrPm} ${hour}:${minute}, ${user} : .*${chat}.*`,
+      // Regex for With timestamp
+      `^${year}년 ${month}월 ${date}일 ${amOrPm} ${hour}:${minute}, `
+      + `${user} : (.*${chat}${withoutTimestamp})`,
       'm'
     );
   }
@@ -56,10 +64,6 @@ class ExplorManager {
 
   async search( query ) {
     return await this.fileManager.search( query );
-  }
-
-  indexOf( query ) {
-    return this.fileManager.search( query );
   }
 
   async readlines( n, isReverse, cursor=null ) {
