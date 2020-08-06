@@ -98,9 +98,8 @@ class ExplorManager {
   }
 
   async getNextChat( cursor ) {
-    let line = 1;    
-    const startOfLine = await this.getNextLines( 1, cursor );
-    let chats = [startOfLine[0]];
+    let line = await this.getNextLines( 1, cursor );
+    let chats = [line[0]];
     let lastCursor = this.fileManager.cursor;
     while( true ) {
       line = await this.getNextLines( 1 );
