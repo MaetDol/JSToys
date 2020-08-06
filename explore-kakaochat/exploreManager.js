@@ -7,6 +7,14 @@ class ExplorManager {
     this.MOBILE_TIMESTAMP_REGEX = new RegExp( this.MOBILE_TIMESTAMP_FORM );
   }
 
+  set fileCursor( pos ) {
+    this.fileManager.cursor = pos;
+  }
+
+  get fileCursor() { 
+    return this.fileManager.cursor;
+  }
+
   set fileManager( fileManager ) {
     this.fm = fileManager;
   }
@@ -51,7 +59,7 @@ class ExplorManager {
   }
   
   async searchAll( query ) {
-    this.fileManager.cursor = 0;
+    this.fileCursor = 0;
     let results = [];
     while( true ) {
       const matched = await this.fileManager.search( query );
@@ -68,7 +76,7 @@ class ExplorManager {
   }
 
   async readlines( n, isReverse, cursor=null ) {
-    this.fileManager.cursor = cursor ?? this.fileManager.cursor;
+    this.fileCursor = cursor ?? this.fileCursor;
     let index = 0;
     let readline = this.fileManager.nextLine.bind( this.fileManager );
     let isOutOfIndex = i => i >= n;
@@ -99,22 +107,38 @@ class ExplorManager {
 
   async getNextChat( cursor ) {
     let line = await this.getNextLines( 1, cursor );
-    let chats = [line[0]];
-    let lastCursor = this.fileManager.cursor;
+    let chat = [line[0]];
+    let lastCursor = this.fileCursor;
     while( true ) {
       line = await this.getNextLines( 1 );
       if( line === null ) {
-        return chats;
+        break;
       }
       if( this.isMobileChat( line )) {
-        this.fileManager.cursor = lastCursor;
-        return chats;
+        this.fileCursor = lastCursor;
+        return chat;
       }
-      lastCursor = this.fileManager.cursor;
-      chats.push( line[0] );
+      lastCursor = this.fileCursor;
+      chat.push( line[0] );
     }
 
-    return chats;
+    return chat;
+  }
+
+  async getPreviousChat( cursor ) {
+    await this.getPreviousLines( 0, cursor );
+    let chat = [];
+    while( true ) {
+      const line = await this.getPreviousLines( 1 );
+      if( line === null ) {
+        return chat;
+      }
+      chat.unshift( line[0] );
+      if( this.isMobileChat( line[0] )) {
+        return chat;
+      }
+    }
+    return chat;
   }
 
   async getPreviousLines( n, cursor ) {
@@ -125,15 +149,15 @@ class ExplorManager {
     return await this.readlines( n, false, cursor );
   }
 
-  async getWrappedLines( n, cursor=this.fileManager.cursor ) {
+  async getWrappedLines( n, cursor=this.fileCursor ) {
 
     const previousLines = await this.getPreviousLines( n, cursor );
-    const startCursor = this.fileManager.cursor;
+    const startCursor = this.fileCursor;
 
     const nextLines = await this.getNextLines( n, cursor );
-    const endCursor = this.fileManager.cursor;
+    const endCursor = this.fileCursor;
 
-    this.fileManager.cursor = cursor;
+    this.fileCursor = cursor;
 
     return {
       previousLines,
