@@ -3,7 +3,7 @@ class ExplorManager {
     this.fileManager = fileManager;
     this.exitSearch = false;
 
-    this.MOBILE_TIMESTAMP_FORM = `\\d{4}년 \\d{1,2}월 \\d{1,2}일`;
+    this.MOBILE_TIMESTAMP_FORM = `\\d{4}년 \\d{1,2}월 \\d{1,2}일 오(전|후) \\d{1,2}:\\d{2}`;
     this.MOBILE_TIMESTAMP_REGEX = new RegExp( this.MOBILE_TIMESTAMP_FORM );
   }
 
