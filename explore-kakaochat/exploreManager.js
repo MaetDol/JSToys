@@ -2,6 +2,9 @@ class ExplorManager {
   constructor( fileManager ) {
     this.fileManager = fileManager;
     this.exitSearch = false;
+
+    this.MOBILE_TIMESTAMP_FORM = `\\d{4}년 \\d{1,2}월 \\d{1,2}일`;
+    this.MOBILE_TIMESTAMP_REGEX = new RegExp( this.MOBILE_TIMESTAMP_FORM );
   }
 
   set fileManager( fileManager ) {
@@ -31,8 +34,7 @@ class ExplorManager {
     }
     let withoutTimestamp = '';
     if( chat ) {
-      const defaultDateSet = `\d{4}년 \d{1,2}월 \d{1,2}일`;
-      withoutTimestamp = `|(.*\\n(?!${defaultDateSet}))+.*${chat}`;
+      withoutTimestamp = `|(.*\\n(?!${this.MOBILE_TIMESTAMP_FORM}))+.*${chat}`;
     }
 
     if( user ) {
@@ -66,7 +68,7 @@ class ExplorManager {
   }
 
   async readlines( n, isReverse, cursor=null ) {
-    this.fileManager.cursor = cursor || this.fileManager.cursor;
+    this.fileManager.cursor = cursor ?? this.fileManager.cursor;
     let index = 0;
     let readline = this.fileManager.nextLine.bind( this.fileManager );
     let isOutOfIndex = i => i >= n;
@@ -83,12 +85,37 @@ class ExplorManager {
     while( !isOutOfIndex( index ) ) {
       const line = await readline();
       if( line === null ) {
-        return lines;
+        return null;
       }
       lines[index] = line;
       index = nextIndex( index );
     }
     return this.decodeLines( lines );
+  }
+
+  isMobileChat( line ) {
+    return this.MOBILE_TIMESTAMP_REGEX.test( line );
+  }
+
+  async getNextChat( cursor ) {
+    let line = 1;    
+    const startOfLine = await this.getNextLines( 1, cursor );
+    let chats = [startOfLine[0]];
+    let lastCursor = this.fileManager.cursor;
+    while( true ) {
+      line = await this.getNextLines( 1 );
+      if( line === null ) {
+        return chats;
+      }
+      if( this.isMobileChat( line )) {
+        this.fileManager.cursor = lastCursor;
+        return chats;
+      }
+      lastCursor = this.fileManager.cursor;
+      chats.push( line[0] );
+    }
+
+    return chats;
   }
 
   async getPreviousLines( n, cursor ) {
