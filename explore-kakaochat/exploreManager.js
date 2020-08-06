@@ -42,7 +42,6 @@ class ExplorManager {
     }
 
     return new RegExp(
-      // Regex for With timestamp
       `^${year}년 ${month}월 ${date}일 ${amOrPm} ${hour}:${minute}, `
       + `${user} : (.*${chat}${withoutTimestamp})`,
       'm'
