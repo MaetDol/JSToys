@@ -2,6 +2,7 @@ class ExplorManager {
   constructor( fileManager ) {
     this.fileManager = fileManager;
     this.exitSearch = false;
+    this.cursorByDates = {};
 
     this.MOBILE_TIMESTAMP_FORM = `\\d{4}년 \\d{1,2}월 \\d{1,2}일 오(전|후) \\d{1,2}:\\d{2}`;
     this.MOBILE_TIMESTAMP_REGEX = new RegExp( this.MOBILE_TIMESTAMP_FORM );
@@ -173,4 +174,16 @@ class ExplorManager {
     return lines.map( l => this.fileManager.decodeUint8( l ) );
   }
 
+
+  async indexingDates() {
+    const dateRegExp = new RegExp(
+      `\\n${this.MOBILE_TIMESTAMP_FORM}\\s\\n`
+    );
+    const positions = await this.searchAll( dateRegExp );
+    for( let i=0; i < positions.length; i++ ) {
+      const timestamp = await this.getNextLines( 1, positions[i] );
+      const dateOnly = timestamp[0].split(/ (?=오)/)[0];
+      this.cursorByDates[dateOnly] = positions[i];
+    }
+  }
 }
