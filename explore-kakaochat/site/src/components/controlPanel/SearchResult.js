@@ -26,7 +26,7 @@ const ScrollWrapper = styled.div`
 const Results = styled.div`
   background: var(--text-dark-medium);
   padding: 24px;
-  height: 100%;
+  min-height: 100%;
 `;
 
 const TranslucentChat = styled( Chat )`

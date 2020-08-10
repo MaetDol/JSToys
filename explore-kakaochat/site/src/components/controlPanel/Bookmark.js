@@ -13,7 +13,7 @@ const ScrollWrapper = styled.div`
   width: calc( 100% + 17px );
   max-height: 480px;
   overflow-y: scroll;
-  margin-top: 16px;
+  margin-top: 8px;
 `;
 
 const BookmarkElem = styled.div`
