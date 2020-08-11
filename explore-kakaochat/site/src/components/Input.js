@@ -21,7 +21,7 @@ const InputElem = styled.input`
   }
 `;
 
-function Input({ label, id, placeholder, children }) {
+function Input({ label, id, children, attributes={} }) {
 
   return (
     <Wrapper>
@@ -31,7 +31,10 @@ function Input({ label, id, placeholder, children }) {
         </label>
       )}
       {children}
-      <InputElem id={id} placeholder={placeholder} />
+      <InputElem 
+        id={id} 
+        {...attributes}
+      />
     </Wrapper>
   );
 }
