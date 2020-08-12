@@ -17,7 +17,7 @@ const Wrapper = styled.div`
 const Text = styled.span`
   display: inline-block;
   min-height: 32px;
-  max-width: calc(100% - 72px);
+  max-width: calc(100% - 80px);
   word-break: break-all;
   padding: 4px 8px;
   margin-right: 8px;

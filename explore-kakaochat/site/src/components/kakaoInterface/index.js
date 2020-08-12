@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import styled from 'styled-components';
+
+import ExplorerContext from '../../context/explorer.js';
 
 import Chat from './Chat.js';
 import Notify from './Notify.js';
@@ -50,14 +52,27 @@ const ChatContainer = styled.article`
 
 function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
   
+  // placeholder
   chatRoomTitle = '웹코딩 STUDY방';
   numberOfPeople = 523;
+  //
+
+  const explorer = useContext( ExplorerContext );
+
+  const changeFile = e => {
+    const files = e.target.files;
+    if( files.length !== 0 ) {
+      explorer.fileManager.file = files[0];
+    }
+  }
 
   return (
     <Frame>
       <Header>
         <div style={{position:'relative', width:'100%'}}>
-          {chatRoomTitle}
+          <label htmlFor={'fileInput'}>
+            {chatRoomTitle}
+         </label>
           <NumberOfPeople>
             {numberOfPeople}
           </NumberOfPeople>
@@ -72,6 +87,13 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
         <Chat/>
         <Chat/>
       </ChatContainer>
+      <input 
+        id={'fileInput'} 
+        type={'file'} 
+        accept={'txt'} 
+        hidden={true}
+        onChange={changeFile}
+      />
     </Frame>
   );
 }

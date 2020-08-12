@@ -23,14 +23,17 @@ const Row = styled.div`
   align-items: center;
 `;
 
-function QueryPanel() {
+function QueryPanel({ query, setQuery, search }) {
 
   const inputDatas = [
     {
       id: 'chat',
       label: '대화 내용',
       placeholder: '여기 참고하시면 돼요!',
-      checkbox: '정규표현식'
+      checkbox: {
+        label: '정규표현식',
+        id: 'useRegExp',
+      }
     },
     {
       id: 'user',
@@ -41,12 +44,19 @@ function QueryPanel() {
       id: 'date',
       label: '얘기했던 날짜',
       placeholder: '2019년 12월 8일',
-      checkbox: '범위 지정'
+      checkbox: {
+        label: '범위 지정',
+        id: 'useDateRange',
+      }
     }
   ];
 
-  const search = e => {
-    e.preventDefault();
+  const setQueryInput = e => {
+    const name = e.target.id
+    setQuery({ 
+      ...query, 
+      [name]: e.target.value,
+    });
   };
 
   return (
@@ -60,10 +70,19 @@ function QueryPanel() {
           key={data.id}
           id={data.id}
           label={data.label}
-          placeholder={data.placeholder}
+          attributes={{
+            placeholder: data.placeholder,
+            value: query[data.id],
+            onChange: setQueryInput
+          }}
         >
           {data.checkbox &&
-            <Checkbox label={data.checkbox} style={{ float:'right' }}/>
+            <Checkbox 
+              onChange={setQueryInput}
+              label={data.checkbox.label} 
+              id={data.checkbox.id} 
+              style={{ float:'right' }}
+            />
           }
         </Input>
       ))} 

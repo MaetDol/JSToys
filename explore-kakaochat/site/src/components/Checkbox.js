@@ -15,18 +15,26 @@ const WrapperLabel = styled.label`
   }
 `;
 
-function Checkbox({ label, style }) {
+function Checkbox({ onChange: toggleCallback, label, id, style }) {
 
   const [checked, setChecked] = useState(false);
   const toggle = e => {
     e.preventDefault();
-    setChecked( !checked );
+    const state = !checked;
+    setChecked( state );
+    toggleCallback({
+      target: {
+        id: id,
+        value: state,
+      },
+    });
   }
 
   return (
     <WrapperLabel onClick={toggle} style={style}>
       {label}
       <CheckboxInput 
+        id={id}
         type={'checkbox'} 
         defaultChecked={checked}
       />
