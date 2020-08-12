@@ -4,7 +4,7 @@ export default class ExplorManager {
     this.exitSearch = false;
     this.cursorByDates = {};
 
-    this.MOBILE_TIMESTAMP_FORM = `\\d{4}년 \\d{1,2}월 \\d{1,2}일 오(전|후) \\d{1,2}:\\d{2}`;
+    this.MOBILE_TIMESTAMP_FORM = `\\d{4}년 \\d{1,2}월 \\d{1,2}일 오. \\d{1,2}:\\d{2}`;
     this.MOBILE_TIMESTAMP_REGEX = new RegExp( this.MOBILE_TIMESTAMP_FORM );
   }
 
@@ -174,6 +174,20 @@ export default class ExplorManager {
     return lines.map( l => this.fileManager.decodeUint8( l ) );
   }
 
+  lineToObject( line ) {
+    const regex = new RegExp(`(${this.MOBILE_TIMESTAMP_FORM}), (.+) : (.+)`);
+    const matched = line[0].match( regex );
+    if( matched === null ) {
+      return { invalid: true, line };
+    }
+    line.shift();
+    return {
+      invalid: false,
+      timestamp: matched[1],
+      name: matched[2],
+      text: [matched[3], ...line],
+    };
+  }
 
   async indexingDates() {
     const dateRegExp = new RegExp(

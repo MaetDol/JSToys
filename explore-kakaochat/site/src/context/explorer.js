@@ -1,21 +1,21 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext } from 'react';
 import FileManager from '../lib/fileManager.js';
 import ExploreManager from '../lib/exploreManager.js';
 
 const fileManager = new FileManager();
 const exploreManager = new ExploreManager( fileManager );
-const ExploreContext = createContext();
+const ExplorerContext = createContext();
 
 const ExplorerProvider = ({ children }) => {
 
   return (
-    <ExploreContext.Provider value={{explorer: exploreManager}}>
+    <ExplorerContext.Provider value={{explorer: exploreManager}}>
       {children}
-    </ExploreContext.Provider>
+    </ExplorerContext.Provider>
   );
 };
 
-const { Consumer: ExploreConsumer } = ExploreContext;
+const { Consumer: ExploreConsumer } = ExplorerContext;
 
 export { ExplorerProvider, ExploreConsumer };
-export default ExploreContext;
+export default ExplorerContext;

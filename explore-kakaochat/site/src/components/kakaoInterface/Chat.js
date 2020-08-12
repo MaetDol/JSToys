@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import colorGenerator from '../../lib/colorGenerator.js';
 
 import SpeechBubble from './SpeechBubble';
 import { ReactComponent as ProfileSvg } from '../../profile.svg';
@@ -11,6 +12,7 @@ const Profile = styled( ProfileSvg )`
   fill: ${ props => props.color };
   margin-right: 8px;
   vertical-align: top;
+  opacity: 0.7;
 `;
 
 const Username = styled.span`
@@ -50,17 +52,17 @@ function Chat({ chats, name, className }) {
     },
   ];
 
-  const color = '#FAEC71';
   name = name || '귀여운 어피치';
+  const color = colorGenerator( name );
 
   return (
     <Wrapper className={className}>
       <Profile color={color}/>
       <AlignRight>
         <Username>{name}</Username>
-        { chats.map( ({ text, timestamp, cursor }) => (
+        { chats.map( ({ text, timestamp, cursor }, i) => (
           <SpeechBubble 
-            key={cursor}
+            key={cursor*10+i}
             text={text}
             timestamp={timestamp}
           />

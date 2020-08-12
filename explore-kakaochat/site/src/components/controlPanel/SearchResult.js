@@ -33,7 +33,7 @@ const TranslucentChat = styled( Chat )`
   opacity: 0.5;
 `;
 
-function SearchResult({ results }) {
+function SearchResult({ results, count }) {
 
   results = results || [
     {
@@ -82,12 +82,12 @@ function SearchResult({ results }) {
     <Wrapper>
       <Row>
         <span>검색 결과</span>
-        <ResultCount>총 {results.length}건</ResultCount>
+        <ResultCount>총 {count}건</ResultCount>
       </Row>
       <ScrollWrapper>
         <Results>
-          { results.map(({ previous, matched, next }) => (
-            <div key={matched.cursor}>
+          { results.map(({ previous, matched, next }, i) => (
+            <div key={matched.cursor*10+i}>
               <Notify text={matched.timestamp} />
               { previous &&
               <TranslucentChat 
