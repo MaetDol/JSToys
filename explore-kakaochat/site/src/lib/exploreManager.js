@@ -6,6 +6,9 @@ export default class ExplorManager {
 
     this.MOBILE_TIMESTAMP_FORM = `\\d{4}년 \\d{1,2}월 \\d{1,2}일 오. \\d{1,2}:\\d{2}`;
     this.MOBILE_TIMESTAMP_REGEX = new RegExp( this.MOBILE_TIMESTAMP_FORM );
+    this.chatType = {};
+    this.chatType.CHAT = 0;
+    this.chatType.SYSTEM_MESSAGE = 1;
   }
 
   set fileCursor( pos ) {
@@ -22,6 +25,10 @@ export default class ExplorManager {
 
   get fileManager() {
     return this.fm;
+  }
+
+  set file( file ) {
+    this.fileManager.file = file;
   }
 
   escapeRegExp( str ) {
@@ -150,23 +157,33 @@ export default class ExplorManager {
     return await this.readlines( n, false, cursor );
   }
 
-  async getWrappedLines( n, cursor=this.fileCursor ) {
-
-    const previousLines = await this.getPreviousLines( n, cursor );
-    const startCursor = this.fileCursor;
-
-    const nextLines = await this.getNextLines( n, cursor );
-    const endCursor = this.fileCursor;
+  async getWrappedChats( n, cursor=this.fileCursor ) {
 
     this.fileCursor = cursor;
+    const previous = [];
+    for( let i=0; i < n; i++ ) {
+      const chat = await this.getPreviousChat()
+      const chatObject = this.parse( chat );
+      chatObject.cursor = this.fileCursor;
+      previous.push( chatObject );
+    }
+
+    const currentChat = await this.getNextChat( cursor );
+    const current = this.parse( currentChat );
+    current.cursor = cursor;
+
+    const next = [];
+    for( let i=0; i < n; i++ ) {
+      const chat = await this.getNextChat();
+      const chatObject = this.parse( chat );
+      chatObject.cursor = this.fileCursor;
+      next.push( chatObject );
+    }
 
     return {
-      previousLines,
-      nextLines,
-      cursor: {
-        start: startCursor,
-        end: endCursor,
-      }
+      previous,
+      current: [current],
+      next,
     };
   }
 
@@ -174,18 +191,27 @@ export default class ExplorManager {
     return lines.map( l => this.fileManager.decodeUint8( l ) );
   }
 
-  lineToObject( line ) {
+  parse( line ) {
     const regex = new RegExp(`(${this.MOBILE_TIMESTAMP_FORM}), (.+) : (.+)`);
-    const matched = line[0].match( regex );
+    let matched = line[0].match( regex );
     if( matched === null ) {
-      return { invalid: true, line };
+      const systemMessageRegex = new RegExp(`(${this.MOBILE_TIMESTAMP_FORM}), (.+)`);
+      matched = line[0].match( systemMessageRegex );
+      if( matched === null ) {
+        return null;
+      }
+      return { 
+        timestamp: matched[1],
+        texts: [matched[2], ...line],
+        type: this.chatType.SYSTEM_MESSAGE,
+      };
     }
     line.shift();
     return {
-      invalid: false,
       timestamp: matched[1],
       name: matched[2],
-      text: [matched[3], ...line],
+      texts: [matched[3], ...line],
+      type: this.chatType.CHAT,
     };
   }
 
@@ -199,5 +225,13 @@ export default class ExplorManager {
       const dateOnly = timestamp[0].split(/ (?=오)/)[0];
       this.cursorByDates[dateOnly] = positions[i];
     }
+  }
+
+  isChat( chat ) {
+    return chat?.type === this.chatType.CHAT;
+  }
+
+  isSystemMessage( chat ) {
+    return chat?.type === this.chatType.SYSTEM_MESSAGE;
   }
 }

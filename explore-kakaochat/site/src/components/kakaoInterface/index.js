@@ -59,10 +59,13 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
 
   const explorer = useContext( ExplorerContext );
 
-  const changeFile = e => {
+  const changeFile = async e => {
     const files = e.target.files;
     if( files.length !== 0 ) {
-      explorer.fileManager.file = files[0];
+      explorer.file = files[0];
+      // await explorer.indexingDates();
+      const cursors = Object.values( explorer.cursorByDates );
+      const startPosition = cursors.sort((a,b) => a-b)[0];
     }
   }
 
@@ -81,11 +84,6 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
       </Header>
       <ChatContainer>
         <Notify text={'2020. 08. 07. 월'}/>
-        <Chat/>
-        <Chat/>
-        <Chat/>
-        <Chat/>
-        <Chat/>
       </ChatContainer>
       <input 
         id={'fileInput'} 
