@@ -27,32 +27,8 @@ const AlignRight = styled.div`
   display: inline-block;
 `;
 
-function Chat({ chats, name, className }) {
+function Chat({ texts, name, timestamp, cursor, className }) {
 
-  chats = chats || [
-    { 
-      cursor: 1327,
-      text: 'Qwerty',
-      timestamp: '2019년 12월 9일 오전 5:32',
-    },
-    { 
-      cursor: 1350,
-      text: 'Qwerty qqq www erererty Very Longlong charaaaaaaacteeerrrrsss',
-      timestamp: '2019년 12월 9일 오전 5:36',
-    },
-    { 
-      cursor: 1390,
-      text: 'Qwertyyyytt qwezds',
-      timestamp: '2019년 12월 9일 오전 7:32',
-    },
-    { 
-      cursor: 1465,
-      text: 'Qwerty {\n\t\tsome words here\n};',
-      timestamp: '2019년 12월 9일 오전 9:32',
-    },
-  ];
-
-  name = name || '귀여운 어피치';
   const color = colorGenerator( name );
 
   return (
@@ -60,13 +36,10 @@ function Chat({ chats, name, className }) {
       <Profile color={color}/>
       <AlignRight>
         <Username>{name}</Username>
-        { chats.map( ({ text, timestamp, cursor }, i) => (
-          <SpeechBubble 
-            key={cursor*10+i}
-            text={text}
-            timestamp={timestamp}
-          />
-        ))}
+        <SpeechBubble 
+          text={texts.join('\n')}
+          timestamp={timestamp}
+        />
       </AlignRight>
     </Wrapper>
   );

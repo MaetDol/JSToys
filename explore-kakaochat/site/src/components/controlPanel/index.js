@@ -34,7 +34,7 @@ const initQuery = {
 
 const initCursor = {
   cursors: [],
-  ahead: 0,
+  head: 0,
   current: 0,
   tail: 0,
 };
@@ -45,28 +45,6 @@ function ControlPanel() {
   const [query, setQuery] = useState( initQuery );
   const [resultCursor, setResultCursor] = useState( initCursor );
   const [result, setResult] = useState([]);
-
-  const getResultPreview = async cursor => {
-
-    let previous = {
-      ...explorer.lineToObject( await explorer.getPreviousChat( cursor )),
-      cursor: explorer.cursor
-    };
-    previous = previous.invalid ? null : previous;
-    
-    let matched = {
-      cursor: cursor,
-      ...explorer.lineToObject( await explorer.getNextChat( cursor ))
-    };
-
-    let next = { 
-      cursor: explorer.cursor,
-      ...explorer.lineToObject( await explorer.getNextChat() )
-    };
-    next = next.invalid ? null : next;
-
-    return { previous, matched, next };
-  }
 
   const search = async e => {
     e.preventDefault();
@@ -79,20 +57,20 @@ function ControlPanel() {
 
     const regexp = explorer.generateMobileQuery( query );
     const cursors = await explorer.searchAll( regexp );
-
+    debugger
     let previews = [];
     let tail = 0;
     for( let i=0; i < 5; i++ ) {
       if( cursors.length === i ) {
         break;
       }
-      previews.push( await getResultPreview( cursors[i] ) );
+      previews.push( await explorer.getWrappedChats( 1, cursors[i] ));
       tail = i;
     }
 
     setResultCursor({
       cursors,
-      ahead: 0,
+      head: 0,
       current: 0,
       tail,
     });
@@ -133,7 +111,7 @@ function ControlPanel() {
         if( tail >= cursorsLength ) {
           break;
         }
-        previews.push( await getResultPreview( resultCursor.cursors[tail] ));
+        previews.push( await explorer.getWrappedChats( 1, resultCursor.cursors[tail] ));
         tail++;
       }
 
@@ -141,8 +119,6 @@ function ControlPanel() {
         ...resultCursor,
         tail
       });
-
-      console.log(previews);
 
       setResult([...result, ...previews]);
       setLoading( false );

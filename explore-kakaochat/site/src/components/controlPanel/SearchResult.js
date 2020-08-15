@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import styled from 'styled-components';
+import ExplorerContext from '../../context/explorer.js';
 
 import Chat from '../kakaoInterface/Chat.js';
 import Notify from '../kakaoInterface/Notify.js';
@@ -34,49 +35,7 @@ const TranslucentChat = styled( Chat )`
 `;
 
 function SearchResult({ results, count }) {
-
-  results = results || [
-    {
-      previous: {
-        name: '말 많은 라이언',
-        cursor: 1307,
-        text: 'Qwerty',
-        timestamp: '2019년 12월 9일 오전 5:32',
-      },
-      matched: {
-        name: '귀여운 어피치',
-        cursor: 1327,
-        text: '이게 메인 텍스트!',
-        timestamp: '2019년 12월 9일 오전 5:34',
-      },
-      next: {
-        name: '귀여운 어피치',
-        cursor: 1377,
-        text: '이건 다음 텍스트!',
-        timestamp: '2019년 12월 9일 오전 5:39',
-      },
-    },
-    {
-      previousa: {
-        name: '삼이',
-        cursor: 1407,
-        text: '너어는 정말',
-        timestamp: '2019년 12월 10일 오전 5:32',
-      },
-      matched: {
-        name: '멍한 무지',
-        cursor: 1427,
-        text: '퇴사하고 싶다..',
-        timestamp: '2019년 12월 10일 오전 5:34',
-      },
-      next: {
-        name: '귀여운 어피치',
-        cursor: 1477,
-        text: '어 너두?',
-        timestamp: '2019년 12월 10일 오전 5:39',
-      },
-    }
-  ];
+  const explorer = useContext( ExplorerContext );
 
   return (
     <Wrapper>
@@ -86,22 +45,28 @@ function SearchResult({ results, count }) {
       </Row>
       <ScrollWrapper>
         <Results>
-          { results.map(({ previous, matched, next }, i) => (
-            <div key={matched.cursor*10+i}>
-              <Notify text={matched.timestamp} />
-              { previous &&
+          { results.map(({ previous, current, next, cursor }, i) => (
+            <div key={current[0].cursor+'#'}>
+              <Notify text={current[0].timestamp} />
+              { explorer.isChat( previous[0] ) &&
               <TranslucentChat 
-                chats={[previous]}
-                name={previous.name}
+                name={previous[0].name}
+                texts={previous[0].texts}
+                timestamp={previous[0].timestamp}
+                cursor={previous[0].cursor}
               />}
               <Chat 
-                chats={[matched]}
-                name={matched.name}
+                name={current[0].name}
+                texts={current[0].texts}
+                timestamp={current[0].timestamp}
+                cursor={current[0].cursor}
               />
-              { next &&
+              { explorer.isChat( next[0] ) &&
               <TranslucentChat 
-                chats={[next]}
-                name={next.name}
+                name={next[0].name}
+                texts={next[0].texts}
+                timestamp={next[0].timestamp}
+                cursor={next[0].cursor}
               />}
             </div>
           ))}
