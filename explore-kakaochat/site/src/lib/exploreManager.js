@@ -175,9 +175,10 @@ export default class ExplorManager {
 
     const next = [];
     for( let i=0; i < n; i++ ) {
-      const chat = await this.getNextChat();
-      const chatObject = this.parse( chat );
-      chatObject.cursor = this.fileCursor;
+      const chatObject = { 
+        cursor: this.fileCursor,
+        ...this.parse( await this.getNextChat() )
+      };
       next.push( chatObject );
     }
 
