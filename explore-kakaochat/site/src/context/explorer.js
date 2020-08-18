@@ -6,16 +6,13 @@ const fileManager = new FileManager();
 const exploreManager = new ExploreManager( fileManager );
 const ExplorerContext = createContext();
 
-const ExplorerProvider = ({ children }) => {
-
+function ExplorerProvider({ children }) {
   return (
-    <ExplorerContext.Provider value={{explorer: exploreManager}}>
+    <ExplorerContext.Provider value={exploreManager}>
       {children}
     </ExplorerContext.Provider>
   );
-};
+}
 
-const { Consumer: ExploreConsumer } = ExplorerContext;
-
-export { ExplorerProvider, ExploreConsumer };
+export {ExplorerProvider};
 export default ExplorerContext;
