@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import colorGenerator from '../../lib/colorGenerator.js';
 
@@ -27,12 +27,16 @@ const AlignRight = styled.div`
   display: inline-block;
 `;
 
-function Chat({ texts, name, timestamp, cursor, className }) {
+function Chat({ texts, name, timestamp, cursor, className, onMount=()=>{} }) {
 
+  const ref = useRef(null);
   const color = colorGenerator( name );
+  useEffect( () => {
+    onMount( ref );
+  }, []);
 
   return (
-    <Wrapper className={className}>
+    <Wrapper className={className} ref={ref}>
       <Profile color={color}/>
       <AlignRight>
         <Username>{name}</Username>
