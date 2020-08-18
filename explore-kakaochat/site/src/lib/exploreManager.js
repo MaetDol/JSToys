@@ -9,6 +9,7 @@ export default class ExplorManager {
     this.chatType = {};
     this.chatType.CHAT = 0;
     this.chatType.SYSTEM_MESSAGE = 1;
+    this.chatType.TIMESTAMP = 2;
   }
 
   set fileCursor( pos ) {
@@ -191,28 +192,36 @@ export default class ExplorManager {
     return lines.map( l => this.fileManager.decodeUint8( l ) );
   }
 
-  parse( line ) {
-    const regex = new RegExp(`(${this.MOBILE_TIMESTAMP_FORM}), (.+) : (.+)`);
-    let matched = line[0].match( regex );
+  parse( lines ) {
+    const regex = new RegExp(`(${this.MOBILE_TIMESTAMP_FORM})(, ((.+) : )?(.+))?`);
+    let matched = lines[0].match( regex );
+    // Invalid format
     if( matched === null ) {
-      const systemMessageRegex = new RegExp(`(${this.MOBILE_TIMESTAMP_FORM}), (.+)`);
-      matched = line[0].match( systemMessageRegex );
-      if( matched === null ) {
-        return null;
-      }
-      return { 
-        timestamp: matched[1],
-        texts: [matched[2], ...line],
-        type: this.chatType.SYSTEM_MESSAGE,
+      return {
+        type: -1
       };
     }
-    line.shift();
-    return {
-      timestamp: matched[1],
-      name: matched[2],
-      texts: [matched[3], ...line],
-      type: this.chatType.CHAT,
+    lines.shift();
+    const dataset = {
+      timestamp: matched[1]
     };
+    // Timestamp only
+    if( matched[5] === undefined ) {
+      dataset.type = this.chatType.TIMESTAMP;
+    }
+    // System message
+    else if( matched[4] === undefined ) {
+      dataset.texts = [matched[5], ...lines];
+      dataset.type = this.chatType.SYSTEM_MESSAGE;
+    }
+    // User chat
+    else if( matched[3] && matched[4] ) {
+      dataset.name = matched[4];
+      dataset.texts = [matched[5], ...lines];
+      dataset.type = this.chatType.CHAT;
+    }
+
+    return dataset;
   }
 
   async indexingDates() {
@@ -227,11 +236,15 @@ export default class ExplorManager {
     }
   }
 
-  isChat( chat ) {
-    return chat?.type === this.chatType.CHAT;
+  isChat( type ) {
+    return type === this.chatType.CHAT;
   }
 
-  isSystemMessage( chat ) {
-    return chat?.type === this.chatType.SYSTEM_MESSAGE;
+  isTimestamp( type ) {
+    return type === this.chatType.TIMESTAMP;
+  }
+
+  isSystemMessage( type ) {
+    return type === this.chatType.SYSTEM_MESSAGE;
   }
 }
