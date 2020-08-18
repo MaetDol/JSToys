@@ -2,6 +2,7 @@ import React, { useContext, useState, useRef } from 'react';
 import styled from 'styled-components';
 
 import ExplorerContext from '../../context/explorer.js';
+import KakaoInterfaceContext from '../../context/kakaoInterface.js';
 
 import Chat from './Chat.js';
 import Notify from './Notify.js';
@@ -61,8 +62,10 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
   //
 
   const explorer = useContext( ExplorerContext );
-  const [loadedChats, setLoadedChats] = useState([]);
-  const [loading, setLoading] = useState( false );
+  const {
+    loadedChats, setLoadedChats,
+    loading, setLoading,
+  } = useContext( KakaoInterfaceContext );
   const loadContents = async counts => {
     setLoading( true );
     const chats = [...loadedChats];
