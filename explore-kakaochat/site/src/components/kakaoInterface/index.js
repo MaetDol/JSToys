@@ -1,4 +1,4 @@
-import React, { useContext, useState, useRef } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import styled from 'styled-components';
 
 import ExplorerContext from '../../context/explorer.js';
@@ -63,8 +63,10 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
 
   const explorer = useContext( ExplorerContext );
   const {
+    loadedChatsLength,
     loadedChats, setLoadedChats,
     loading, setLoading,
+    scroll, setScroll,
   } = useContext( KakaoInterfaceContext );
   const loadContents = async counts => {
     setLoading( true );
@@ -93,7 +95,7 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
   };
 
   const [lastChatOffset, setLastChatOffset] = useState(0);
-  const updateLastChatOffsetCurrying = ref => {
+  const updateLastChatOffset = ref => {
     setLastChatOffset( ref.current.offsetTop );
   };
 
@@ -106,6 +108,14 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
       loadContents( 10 );
     }
   };
+  
+  const scrollRef = React.createRef();
+  useEffect(() => {
+    if( scroll >= 0 ) {
+      scrollRef.current.scrollTop = scroll;
+      setScroll(-1);
+    }
+  }, [scroll]);
 
   return (
     <Frame>
@@ -120,7 +130,7 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
           <HamburgerIcon />
         </div>
       </Header>
-      <ScrollWrapper onScroll={loadByScroll}>
+      <ScrollWrapper onScroll={loadByScroll} ref={scrollRef}>
         <ChatContainer>
           { loadedChats.map(({ texts, name, timestamp, cursor, type }, idx ) => {
             if( explorer.isChat( type )) {
@@ -131,7 +141,7 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
                   timestamp={timestamp}
                   cursor={cursor}
                   key={cursor}
-                  onMount={updateLastChatOffsetCurrying}
+                  onMount={updateLastChatOffset}
                 />);
             } else if( explorer.isSystemMessage( type )) {
               return <Notify key={cursor} text={texts.join('\n')} />;

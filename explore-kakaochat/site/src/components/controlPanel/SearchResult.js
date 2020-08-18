@@ -31,15 +31,20 @@ const Results = styled.div`
   min-height: 100%;
 `;
 
+const Result = styled.div`
+  cursor: pointer;
+`;
+
 const TranslucentChat = styled( Chat )`
   opacity: 0.5;
 `;
 
 function SearchResult({ results, count }) {
   const explorer = useContext( ExplorerContext );
-  const {setLoadedChats} = useContext( KakaoInterfaceContext );
+  const {setLoadedChats, setScroll} = useContext( KakaoInterfaceContext );
   const navigateKakaoInterface = async cursor => {
     const {previous, current, next} = await explorer.getWrappedChats( 10, cursor );
+    setScroll(0);
     setLoadedChats([...previous, ...current, ...next]);
   };
 
@@ -52,7 +57,7 @@ function SearchResult({ results, count }) {
       <ScrollWrapper>
         <Results>
           { results.map(({ previous, current, next, cursor }, i) => (
-            <div key={current[0].cursor} onClick={() => navigateKakaoInterface( current[0].cursor )}>
+            <Result key={current[0].cursor} onClick={() => navigateKakaoInterface( current[0].cursor )}>
               <Notify text={current[0].timestamp} />
               { explorer.isChat( previous[0].type ) &&
               <TranslucentChat 
@@ -74,7 +79,7 @@ function SearchResult({ results, count }) {
                 timestamp={next[0].timestamp}
                 cursor={next[0].cursor}
               />}
-            </div>
+            </Result>
           ))}
         </Results>
       </ScrollWrapper>

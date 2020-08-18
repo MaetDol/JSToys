@@ -7,9 +7,10 @@ const ScrollWrapperElem = styled.div`
   overflow-y: scroll;
 `;
 
-function ScrollWrapper({ className, children, onScroll=()=>0 }) {
+function ScrollWrapper({ className, children, onScroll=()=>0 }, ref ) {
   return (
     <ScrollWrapperElem 
+      ref={ref}
       className={className}
       onScroll={onScroll}
     >
@@ -18,4 +19,4 @@ function ScrollWrapper({ className, children, onScroll=()=>0 }) {
   );
 }
 
-export default ScrollWrapper;
+export default React.forwardRef( ScrollWrapper );
