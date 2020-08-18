@@ -46,6 +46,25 @@ function ControlPanel() {
   const [resultCursor, setResultCursor] = useState( initCursor );
   const [result, setResult] = useState([]);
 
+  const getResultPreview = async cursor => {
+
+    let previous = await explorer.getPreviousChat( cursor );
+    previous = previous.invalid ? null : previous;
+    
+    let matched = {
+      cursor: cursor,
+      ...explorer.lineToObject( await explorer.getNextChat( cursor ))
+    };
+
+    let next = { 
+      cursor: explorer.cursor,
+      ...explorer.lineToObject( await explorer.getNextChat() )
+    };
+    next = next.invalid ? null : next;
+
+    return { previous, matched, next };
+  }
+
   const search = async e => {
     e.preventDefault();
     setResult([]);
@@ -75,6 +94,8 @@ function ControlPanel() {
       tail,
     });
 
+    console.log('INDEX.js')
+    console.log(previews)
     setResult( previews );
   };
 

@@ -166,7 +166,7 @@ export default class ExplorManager {
       const chat = await this.getPreviousChat()
       const chatObject = this.parse( chat );
       chatObject.cursor = this.fileCursor;
-      previous.push( chatObject );
+      previous.unshift( chatObject );
     }
 
     const currentChat = await this.getNextChat( cursor );
