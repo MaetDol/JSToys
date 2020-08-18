@@ -1,10 +1,11 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useRef } from 'react';
 import styled from 'styled-components';
 
 import ExplorerContext from '../../context/explorer.js';
 
 import Chat from './Chat.js';
 import Notify from './Notify.js';
+import ScrollWrapperElem from '../ScrollWrapper.js';
 import { ReactComponent as HamburgerSvg } from '../../menu.svg';
 
 const Frame = styled.div`
@@ -41,12 +42,14 @@ const HamburgerIcon = styled( HamburgerSvg )`
   transform: translateY(-50%);
 `;
 
+const ScrollWrapper = styled( ScrollWrapperElem )`
+  height: calc( 100% - 72px );
+`;
+
 const ChatContainer = styled.article`
   position: relative;
   padding: 16px 24px 24px;
-  overflow-y: scroll;
-  width: calc(100% + 17px);
-  height: 100%;
+  width: 100%;
   box-sizing: border-box;
 `;
 
@@ -58,16 +61,48 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
   //
 
   const explorer = useContext( ExplorerContext );
+  const [loadedChats, setLoadedChats] = useState([]);
+  const [loading, setLoading] = useState( false );
+  const loadContents = async counts => {
+    setLoading( true );
+    const chats = [...loadedChats];
+    for( let i=0; i < counts; i++ ) {
+      const chatObj = {
+        cursor: explorer.fileCursor,
+        ...explorer.parse( await explorer.getNextChat() )
+      };
+      chats.push( chatObj );
+    }
+    setLoadedChats( chats );
+    setLoading( false );
+  };
 
   const changeFile = async e => {
     const files = e.target.files;
     if( files.length !== 0 ) {
       explorer.file = files[0];
-      // await explorer.indexingDates();
+      await explorer.indexingDates();
       const cursors = Object.values( explorer.cursorByDates );
       const startPosition = cursors.sort((a,b) => a-b)[0];
+      explorer.fileCursor = startPosition;
+      await loadContents( 20 );
     }
-  }
+  };
+
+  const [lastChatOffset, setLastChatOffset] = useState(0);
+  const updateLastChatOffsetCurrying = ref => {
+    setLastChatOffset( ref.current.offsetTop );
+  };
+
+  const loadByScroll = e => {
+    if( loading ) {
+      return;
+    }
+    const scrollPosition = e.target.scrollTop + e.target.offsetHeight;
+    if( scrollPosition > lastChatOffset ) {
+      loadContents( 10 );
+    }
+  };
 
   return (
     <Frame>
@@ -82,9 +117,27 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
           <HamburgerIcon />
         </div>
       </Header>
-      <ChatContainer>
-        <Notify text={'2020. 08. 07. 월'}/>
-      </ChatContainer>
+      <ScrollWrapper onScroll={loadByScroll}>
+        <ChatContainer>
+          { loadedChats.map(({ texts, name, timestamp, cursor, type }, idx ) => {
+            if( explorer.isChat( type )) {
+              return (
+                <Chat 
+                  texts={texts}
+                  name={name}
+                  timestamp={timestamp}
+                  cursor={cursor}
+                  key={cursor}
+                  onMount={updateLastChatOffsetCurrying}
+                />);
+            } else if( explorer.isSystemMessage( type )) {
+              return <Notify key={cursor} text={texts.join('\n')} />;
+            } else if( explorer.isTimestamp( type )) {
+              return <Notify key={cursor} text={timestamp} />;
+            }
+          })}
+        </ChatContainer>
+      </ScrollWrapper>
       <input 
         id={'fileInput'} 
         type={'file'} 

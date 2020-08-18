@@ -4,6 +4,7 @@ import ExplorerContext from '../../context/explorer.js';
 
 import Chat from '../kakaoInterface/Chat.js';
 import Notify from '../kakaoInterface/Notify.js';
+import ScrollWrapperElem from '../ScrollWrapper.js';
 
 const Wrapper = styled.div`
   height: 100%;
@@ -17,11 +18,9 @@ const ResultCount = styled.span`
   float: right;
 `;
 
-const ScrollWrapper = styled.div`
-  width: calc( 100% + 17px );
+const ScrollWrapper = styled( ScrollWrapperElem )`
   height: calc( 100% - 1em - 8px);
   margin-top: 8px;
-  overflow-y: scroll;
 `;
 
 const Results = styled.div`
