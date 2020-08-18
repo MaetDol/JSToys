@@ -1,5 +1,7 @@
 import React, { useContext } from 'react';
 import styled from 'styled-components';
+
+import KakaoInterfaceContext from '../../context/kakaoInterface.js';
 import ExplorerContext from '../../context/explorer.js';
 
 import Chat from '../kakaoInterface/Chat.js';
@@ -35,6 +37,13 @@ const TranslucentChat = styled( Chat )`
 
 function SearchResult({ results, count }) {
   const explorer = useContext( ExplorerContext );
+  const {setLoadedChats} = useContext( KakaoInterfaceContext );
+  const navigateKakaoInterface = async cursor => {
+    const {previous, current, next} = await explorer.getWrappedChats( 10, cursor );
+    console.log(cursor)
+    console.log(previous,current,next)
+    setLoadedChats([...previous, ...current, ...next]);
+  };
 
   return (
     <Wrapper>
@@ -45,9 +54,9 @@ function SearchResult({ results, count }) {
       <ScrollWrapper>
         <Results>
           { results.map(({ previous, current, next, cursor }, i) => (
-            <div key={current[0].cursor+'#'}>
+            <div key={current[0].cursor+'#'} onClick={() => navigateKakaoInterface( current[0].cursor )}>
               <Notify text={current[0].timestamp} />
-              { explorer.isChat( previous[0] ) &&
+              { explorer.isChat( previous[0].type ) &&
               <TranslucentChat 
                 name={previous[0].name}
                 texts={previous[0].texts}
@@ -60,7 +69,7 @@ function SearchResult({ results, count }) {
                 timestamp={current[0].timestamp}
                 cursor={current[0].cursor}
               />
-              { explorer.isChat( next[0] ) &&
+              { explorer.isChat( next[0].type ) &&
               <TranslucentChat 
                 name={next[0].name}
                 texts={next[0].texts}
