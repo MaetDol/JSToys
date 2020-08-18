@@ -6,12 +6,15 @@ function KakaoInterfaceProvider({ children }) {
 
   const [loadedChats, setLoadedChats] = useState([]);
   const [loading, setLoading] = useState( false );
+  const [scroll, setScroll] = useState(-1);
 
   const value = {
     loadedChats,
     loading,
+    scroll,
     setLoadedChats,
     setLoading,
+    setScroll,
   };
 
   return (
