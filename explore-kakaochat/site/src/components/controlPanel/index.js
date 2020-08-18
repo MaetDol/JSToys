@@ -76,7 +76,6 @@ function ControlPanel() {
 
     const regexp = explorer.generateMobileQuery( query );
     const cursors = await explorer.searchAll( regexp );
-    debugger
     let previews = [];
     let tail = 0;
     for( let i=0; i < 5; i++ ) {
@@ -94,8 +93,6 @@ function ControlPanel() {
       tail,
     });
 
-    console.log('INDEX.js')
-    console.log(previews)
     setResult( previews );
   };
 

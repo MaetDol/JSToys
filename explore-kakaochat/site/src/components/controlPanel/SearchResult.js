@@ -40,8 +40,6 @@ function SearchResult({ results, count }) {
   const {setLoadedChats} = useContext( KakaoInterfaceContext );
   const navigateKakaoInterface = async cursor => {
     const {previous, current, next} = await explorer.getWrappedChats( 10, cursor );
-    console.log(cursor)
-    console.log(previous,current,next)
     setLoadedChats([...previous, ...current, ...next]);
   };
 
@@ -54,7 +52,7 @@ function SearchResult({ results, count }) {
       <ScrollWrapper>
         <Results>
           { results.map(({ previous, current, next, cursor }, i) => (
-            <div key={current[0].cursor+'#'} onClick={() => navigateKakaoInterface( current[0].cursor )}>
+            <div key={current[0].cursor} onClick={() => navigateKakaoInterface( current[0].cursor )}>
               <Notify text={current[0].timestamp} />
               { explorer.isChat( previous[0].type ) &&
               <TranslucentChat 
