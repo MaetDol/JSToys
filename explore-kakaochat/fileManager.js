@@ -3,7 +3,9 @@ class FileManager {
     this.NEW_LINE = '\n'.charCodeAt(0);
     this.BUF_SIZE = 128;
     this.MAX_CHUNK = 2**16;
-    this.UTF8_SIGNATURE = new Uint8Array([239, 187, 191]);
+    this.UTF8_FILE_SIGNATURE = new Uint8Array([239, 187, 191]);
+    this.MAX_UNICODE_LENGTH = 3;
+    this.UTF8_ERROR = '\uFFFD';
 
     this.textDecoder = new TextDecoder();
     this._cursor = 0;
@@ -17,7 +19,7 @@ class FileManager {
     const uint8Array = this.sliceFile(3);
     this.cursor = tempCursor;
 
-    return this.isContainsArray( uint8Array, this.UTF8_SIGNATURE );
+    return this.isContainsArray( uint8Array, this.UTF8_FILE_SIGNATURE );
   }
   
   isContainsArray( subset, union ) {
@@ -51,7 +53,7 @@ class FileManager {
   set file( newFile ) {
     this.cursor = 0;
     this._file = newFile;
-    this.initialCursorPosition = this.isUTF8() ? this.UTF8_SIGNATURE.length : 0;
+    this.initialCursorPosition = this.isUTF8() ? this.UTF8_FILE_SIGNATURE.length : 0;
     this.startFilePosition = this.initialCursorPosition;
   }
 
@@ -78,13 +80,43 @@ class FileManager {
     return uint8Array;
   }
 
+  validUTF8Position( arrayBuffer ) {
+    let i = -1;
+    let ch = this.UTF8_ERROR;
+    while( ch === this.UTF8_ERROR ) {
+      i++;
+      if( i >= arrayBuffer.length ) {
+        return -1;
+      }
+      let slicedBuffer = new Uint8Array([
+        arrayBuffer[i],
+        arrayBuffer[i+1],
+        arrayBuffer[i+2],
+        arrayBuffer[i+3],
+      ]);
+      ch = this.decodeUint8( slicedBuffer )[0];
+    }
+    return i;
+  }
+
   async search( query ) {
     const querySize = this.sizeof( query );
+    this.cursor += querySize;
     while( true ) {
+      this.cursor -= querySize + this.MAX_UNICODE_LENGTH;
       const uint8Array = await this.readBySize( this.MAX_CHUNK );
       if( uint8Array === null ) {
         return null;
       }
+      const validPosition = this.validUTF8Position( uint8Array );
+      if( validPosition === -1 ) {
+        this.cursor += this.MAX_CHUNK;
+        continue;
+      } else if( validPosition != 0 ) {
+        this.cursor += validPosition;
+        continue;
+      }
+
       const stringify = this.decodeUint8( uint8Array );
       const match = stringify.match( query );
       if( match !== null ) {
@@ -97,7 +129,7 @@ class FileManager {
           query 
         };
       }
-      this.cursor += this.MAX_CHUNK - querySize;
+      this.cursor += this.MAX_CHUNK;
     }
   }
 

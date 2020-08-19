@@ -2,6 +2,18 @@ class ExplorManager {
   constructor( fileManager ) {
     this.fileManager = fileManager;
     this.exitSearch = false;
+    this.cursorByDates = {};
+
+    this.MOBILE_TIMESTAMP_FORM = `\\d{4}년 \\d{1,2}월 \\d{1,2}일 오(전|후) \\d{1,2}:\\d{2}`;
+    this.MOBILE_TIMESTAMP_REGEX = new RegExp( this.MOBILE_TIMESTAMP_FORM );
+  }
+
+  set fileCursor( pos ) {
+    this.fileManager.cursor = pos;
+  }
+
+  get fileCursor() { 
+    return this.fileManager.cursor;
   }
 
   set fileManager( fileManager ) {
@@ -31,8 +43,7 @@ class ExplorManager {
     }
     let withoutTimestamp = '';
     if( chat ) {
-      const defaultDateSet = `\d{4}년 \d{1,2}월 \d{1,2}일`;
-      withoutTimestamp = `|(.*\\n(?!${defaultDateSet}))+.*${chat}`;
+      withoutTimestamp = `|(.*\\n(?!${this.MOBILE_TIMESTAMP_FORM}))+.*${chat}`;
     }
 
     if( user ) {
@@ -42,7 +53,6 @@ class ExplorManager {
     }
 
     return new RegExp(
-      // Regex for With timestamp
       `^${year}년 ${month}월 ${date}일 ${amOrPm} ${hour}:${minute}, `
       + `${user} : (.*${chat}${withoutTimestamp})`,
       'm'
@@ -50,7 +60,7 @@ class ExplorManager {
   }
   
   async searchAll( query ) {
-    this.fileManager.cursor = 0;
+    this.fileCursor = 0;
     let results = [];
     while( true ) {
       const matched = await this.fileManager.search( query );
@@ -67,7 +77,7 @@ class ExplorManager {
   }
 
   async readlines( n, isReverse, cursor=null ) {
-    this.fileManager.cursor = cursor || this.fileManager.cursor;
+    this.fileCursor = cursor ?? this.fileCursor;
     let index = 0;
     let readline = this.fileManager.nextLine.bind( this.fileManager );
     let isOutOfIndex = i => i >= n;
@@ -84,12 +94,52 @@ class ExplorManager {
     while( !isOutOfIndex( index ) ) {
       const line = await readline();
       if( line === null ) {
-        return lines;
+        return null;
       }
       lines[index] = line;
       index = nextIndex( index );
     }
     return this.decodeLines( lines );
+  }
+
+  isMobileChat( line ) {
+    return this.MOBILE_TIMESTAMP_REGEX.test( line );
+  }
+
+  async getNextChat( cursor ) {
+    let line = await this.getNextLines( 1, cursor );
+    let chat = [line[0]];
+    let lastCursor = this.fileCursor;
+    while( true ) {
+      line = await this.getNextLines( 1 );
+      if( line === null ) {
+        break;
+      }
+      if( this.isMobileChat( line )) {
+        this.fileCursor = lastCursor;
+        return chat;
+      }
+      lastCursor = this.fileCursor;
+      chat.push( line[0] );
+    }
+
+    return chat;
+  }
+
+  async getPreviousChat( cursor ) {
+    await this.getPreviousLines( 0, cursor );
+    let chat = [];
+    while( true ) {
+      const line = await this.getPreviousLines( 1 );
+      if( line === null ) {
+        return chat;
+      }
+      chat.unshift( line[0] );
+      if( this.isMobileChat( line[0] )) {
+        return chat;
+      }
+    }
+    return chat;
   }
 
   async getPreviousLines( n, cursor ) {
@@ -100,15 +150,15 @@ class ExplorManager {
     return await this.readlines( n, false, cursor );
   }
 
-  async getWrappedLines( n, cursor=this.fileManager.cursor ) {
+  async getWrappedLines( n, cursor=this.fileCursor ) {
 
     const previousLines = await this.getPreviousLines( n, cursor );
-    const startCursor = this.fileManager.cursor;
+    const startCursor = this.fileCursor;
 
     const nextLines = await this.getNextLines( n, cursor );
-    const endCursor = this.fileManager.cursor;
+    const endCursor = this.fileCursor;
 
-    this.fileManager.cursor = cursor;
+    this.fileCursor = cursor;
 
     return {
       previousLines,
@@ -124,4 +174,16 @@ class ExplorManager {
     return lines.map( l => this.fileManager.decodeUint8( l ) );
   }
 
+
+  async indexingDates() {
+    const dateRegExp = new RegExp(
+      `\\n${this.MOBILE_TIMESTAMP_FORM}\\s\\n`
+    );
+    const positions = await this.searchAll( dateRegExp );
+    for( let i=0; i < positions.length; i++ ) {
+      const timestamp = await this.getNextLines( 1, positions[i] );
+      const dateOnly = timestamp[0].split(/ (?=오)/)[0];
+      this.cursorByDates[dateOnly] = positions[i];
+    }
+  }
 }
