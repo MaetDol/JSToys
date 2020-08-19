@@ -56,6 +56,7 @@ const BookmarkButton = styled.button`
   position: absolute;
   outline: none;
   display: none;
+  cursor: pointer;
   &:active {
     background: var(--color-point);
   }
