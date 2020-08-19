@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import styled from 'styled-components';
+import KakaoInterfaceContext from '../../context/kakaoInterface.js';
 
 import SpeechBubble from '../kakaoInterface/SpeechBubble.js';
 
@@ -31,20 +32,16 @@ const BookmarkBubble = styled( SpeechBubble )`
   }
 `;
 
-function Bookmark({ bookmarks }) {
+const ClickWrapper = styled.div`
+  cursor: pointer;
+`;
 
-  bookmarks = bookmarks || [
-    {
-      cursor: 1320,
-      text: '이거 되게 중요한 정보인데',
-      timestamp: '2020년 3월 5일 오후 7:12',
-    },
-    {
-      cursor: 1370,
-      text: 'https://naver.com으로 가시면',
-      timestamp: '2020년 3월 19일 오전 9:04',
-    },
-  ];
+function Bookmark() {
+
+  const {navigateKakaoInterface, bookmarks} = useContext( KakaoInterfaceContext );
+  const navigateTo = cursor => {
+    navigateKakaoInterface({ cursor, count: 15 });
+  };
 
   return (
     <Wrapper>
@@ -52,11 +49,16 @@ function Bookmark({ bookmarks }) {
       <ScrollWrapper>
         <BookmarkElem>
           { bookmarks.map(({text, timestamp, cursor}) => (
-            <BookmarkBubble
+            <ClickWrapper
+              onClick={() => navigateTo( cursor )}
               key={cursor}
-              text={text}
-              timestamp={timestamp}
-            />
+            >
+              <BookmarkBubble
+                text={text}
+                timestamp={timestamp}
+                cursor={cursor}
+              />
+            </ClickWrapper>
           ))}
         </BookmarkElem>
       </ScrollWrapper>
