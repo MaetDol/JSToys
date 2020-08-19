@@ -16,6 +16,7 @@ const Wrapper = styled.span`
   transform: translateX(-50%);
   font-size: 14px;
   opacity: 0.7;
+  text-align: center;
 `;
 
 function Notify({ text }) {
