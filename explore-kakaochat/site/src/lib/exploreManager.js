@@ -164,6 +164,9 @@ export default class ExplorManager {
     const previous = [];
     for( let i=0; i < n; i++ ) {
       const chat = await this.getPreviousChat()
+      if( chat.length === 0 ) {
+        break;
+      }
       const chatObject = this.parse( chat );
       chatObject.cursor = this.fileCursor;
       previous.unshift( chatObject );
@@ -175,11 +178,15 @@ export default class ExplorManager {
 
     const next = [];
     for( let i=0; i < n; i++ ) {
-      const chatObject = { 
-        cursor: this.fileCursor,
-        ...this.parse( await this.getNextChat() )
-      };
-      next.push( chatObject );
+      const cursor = this.fileCursor;
+      const chat = await this.getNextChat();
+      if( chat.length === 0 ) {
+        break;
+      }
+      next.push({
+        cursor,
+        ...this.parse( chat )
+      });
     }
 
     return {

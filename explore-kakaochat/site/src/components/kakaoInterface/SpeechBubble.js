@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import styled from 'styled-components';
 import { ReactComponent as BookmarkSvg } from '../../bookmark.svg';
+import KakaoInterfaceContext from '../../context/kakaoInterface.js';
 
 const Wrapper = styled.div`
   position: relative;
@@ -64,8 +65,17 @@ const BookmarkButton = styled.button`
 
 const TIME_SPLITTER = / (?=오)/;
 
-function SpeechBubble({ className, text, timestamp }) {
+function SpeechBubble({ className, text, timestamp, cursor }) {
+  
+  const {toggleBookmark} = useContext( KakaoInterfaceContext );
   const currentTime = timestamp.split( TIME_SPLITTER )[1];
+
+  const toggle = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleBookmark({ text, timestamp, cursor });
+  };
+
   return (
     <Wrapper className={className}>
       <Text>
@@ -74,7 +84,7 @@ function SpeechBubble({ className, text, timestamp }) {
       <Timestamp>
         {currentTime}
       </Timestamp>
-      <BookmarkButton>
+      <BookmarkButton onClick={toggle}>
         <BookmarkIcon />
       </BookmarkButton>
     </Wrapper>

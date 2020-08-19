@@ -67,6 +67,7 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
     loadedChats, setLoadedChats,
     loading, setLoading,
     scroll, setScroll,
+    navigateInfo, initNavigateInfo,
   } = useContext( KakaoInterfaceContext );
   const loadContents = async counts => {
     setLoading( true );
@@ -116,6 +117,20 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
       setScroll(-1);
     }
   }, [scroll]);
+
+  useEffect(() => {
+    const loadChats = async () => {
+      const {previous, current, next} = await explorer.getWrappedChats( 
+        navigateInfo.count, navigateInfo.cursor 
+      );
+      setScroll(0);
+      setLoadedChats([...previous, ...current, ...next]);
+      initNavigateInfo();
+    };
+    if( navigateInfo.count > 0 ) {
+      loadChats();
+    }
+  }, [navigateInfo]);
 
   return (
     <Frame>

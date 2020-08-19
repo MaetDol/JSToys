@@ -43,6 +43,7 @@ function Chat({ texts, name, timestamp, cursor, className, onMount=()=>{} }) {
         <SpeechBubble 
           text={texts.join('\n')}
           timestamp={timestamp}
+          cursor={cursor}
         />
       </AlignRight>
     </Wrapper>
