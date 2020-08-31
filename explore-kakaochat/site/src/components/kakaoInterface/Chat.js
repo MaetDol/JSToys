@@ -33,6 +33,7 @@ function Chat({ texts, name, timestamp, cursor, className, onMount=()=>{} }) {
   const color = colorGenerator( name );
   useEffect( () => {
     onMount( ref );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

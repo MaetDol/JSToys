@@ -12,6 +12,7 @@ const Wrapper = styled.div`
   display: flex;
   height: 100%;
   max-width: 1520px;
+  min-width: 1360px;
   justify-content: space-between;
   margin: auto;
 `;

@@ -33,7 +33,7 @@ export default class ExplorManager {
   }
 
   escapeRegExp( str ) {
-    return str.replace(/[.*+\-?^${}()|[\]\\\/]/g, '\\$&').replace(/\n/g,'\\n');
+    return str.replace(/[.*+\-?^${}()|[\]\\/]/g, '\\$&').replace(/\n/g,'\\n');
   }
 
   generateMobileQuery({ timestamp={}, user='', chat='', useRegExp=false }={}) {
@@ -147,7 +147,6 @@ export default class ExplorManager {
         return chat;
       }
     }
-    return chat;
   }
 
   async getPreviousLines( n, cursor ) {
