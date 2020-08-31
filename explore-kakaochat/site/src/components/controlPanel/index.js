@@ -46,8 +46,13 @@ function ControlPanel() {
   const [resultCursor, setResultCursor] = useState( initCursor );
   const [result, setResult] = useState([]);
 
+  const [searching, setSearching] = useState(false);
   const search = async e => {
     e.preventDefault();
+    if( searching ) {
+      return;
+    }
+    setSearching( true );
     setResult([]);
     setResultCursor( initCursor );
     const isEmpty = ( query.chat + query.user + query.date ).length === 0;
@@ -75,6 +80,7 @@ function ControlPanel() {
     });
 
     setResult( previews );
+    setSearching(false);
   };
 
   const [loading, setLoading] = useState(false);
