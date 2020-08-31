@@ -63,7 +63,6 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
 
   const explorer = useContext( ExplorerContext );
   const {
-    loadedChatsLength,
     loadedChats, setLoadedChats,
     loading, setLoading,
     scroll, setScroll,
@@ -116,6 +115,7 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
       scrollRef.current.scrollTop = scroll;
       setScroll(-1);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scroll]);
 
   useEffect(() => {
@@ -130,6 +130,7 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
     if( navigateInfo.count > 0 ) {
       loadChats();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigateInfo]);
 
   return (
@@ -163,6 +164,7 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
             } else if( explorer.isTimestamp( type )) {
               return <Notify key={cursor} text={timestamp} />;
             }
+            return null;
           })}
         </ChatContainer>
       </ScrollWrapper>

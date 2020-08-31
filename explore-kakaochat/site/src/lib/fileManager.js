@@ -112,7 +112,7 @@ export default class FileManager {
       if( validPosition === -1 ) {
         this.cursor += this.MAX_CHUNK;
         continue;
-      } else if( validPosition != 0 ) {
+      } else if( validPosition !== 0 ) {
         this.cursor += validPosition;
         continue;
       }
@@ -163,8 +163,6 @@ export default class FileManager {
 
       lineSize += this.BUF_SIZE;
     }
-
-    return null;
   }
 
   lastIndexOf( array, value, start ) {

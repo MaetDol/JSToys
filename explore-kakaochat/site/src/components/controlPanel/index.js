@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import styled from 'styled-components';
 import ExplorerContext from '../../context/explorer.js';
 
@@ -46,25 +46,6 @@ function ControlPanel() {
   const [resultCursor, setResultCursor] = useState( initCursor );
   const [result, setResult] = useState([]);
 
-  const getResultPreview = async cursor => {
-
-    let previous = await explorer.getPreviousChat( cursor );
-    previous = previous.invalid ? null : previous;
-    
-    let matched = {
-      cursor: cursor,
-      ...explorer.lineToObject( await explorer.getNextChat( cursor ))
-    };
-
-    let next = { 
-      cursor: explorer.cursor,
-      ...explorer.lineToObject( await explorer.getNextChat() )
-    };
-    next = next.invalid ? null : next;
-
-    return { previous, matched, next };
-  }
-
   const search = async e => {
     e.preventDefault();
     setResult([]);
@@ -96,12 +77,8 @@ function ControlPanel() {
     setResult( previews );
   };
 
-  useEffect(() => {
-    
-  }, [resultCursor.current]);
-  
   const [loading, setLoading] = useState(false);
-  const [lastTop, setTop] = useState(0);
+  const [lastTop] = useState(0);
   const scrollSearchResult = e => {
     if( loading ) {
       return;
