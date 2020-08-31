@@ -68,6 +68,7 @@ export default class ExplorManager {
   }
   
   async searchAll( query ) {
+    this.exitSearch = false;
     this.fileCursor = 0;
     let results = [];
     while( true ) {
