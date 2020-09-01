@@ -46,13 +46,15 @@ function ControlPanel() {
   const [resultCursor, setResultCursor] = useState( initCursor );
   const [result, setResult] = useState([]);
 
-  const [searching, setSearching] = useState(false);
+  const [searchProgress, setSearchProgress] = useState(-1);
   const search = async e => {
     e.preventDefault();
-    if( searching ) {
+    const isSearching = searchProgress >= 0;
+    if( isSearching ) {
       return;
     }
-    setSearching( true );
+
+    setSearchProgress( 0 );
     setResult([]);
     setResultCursor( initCursor );
     const isEmpty = ( query.chat + query.user + query.date ).length === 0;
@@ -60,8 +62,12 @@ function ControlPanel() {
       return;
     }
 
+    const updateSearchProgress = function ( self ) {
+      const percentage = parseInt( self.fileCursor / self.fileManager.file.size * 100 );
+      setSearchProgress( percentage );
+    };
     const regexp = explorer.generateMobileQuery( query );
-    const cursors = await explorer.searchAll( regexp );
+    const cursors = await explorer.searchAll( regexp, updateSearchProgress );
     let previews = [];
     let tail = 0;
     for( let i=0; i < 5; i++ ) {
@@ -80,7 +86,7 @@ function ControlPanel() {
     });
 
     setResult( previews );
-    setSearching(false);
+    setSearchProgress(-1);
   };
 
   const [loading, setLoading] = useState(false);
@@ -135,7 +141,7 @@ function ControlPanel() {
         <Bookmark />
       </Column>
       <Column width={'472px'} onScroll={scrollSearchResult}>
-        <SearchResult results={result} count={resultCursor.cursors.length} />
+        <SearchResult results={result} count={resultCursor.cursors.length} progress={searchProgress} />
       </Column>
     </Wrapper>
   );
