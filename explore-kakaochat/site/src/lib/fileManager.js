@@ -102,6 +102,7 @@ export default class FileManager {
   async search( query, loopCallback=()=>{} ) {
     const querySize = this.sizeof( query );
     while( true ) {
+      loopCallback();
       const uint8Array = await this.readBySize( this.MAX_CHUNK );
       if( uint8Array === null ) {
         return null;
@@ -127,7 +128,6 @@ export default class FileManager {
           query 
         };
       }
-      loopCallback();
       this.cursor += this.MAX_CHUNK - (querySize + this.MAX_UNICODE_LENGTH);
     }
   }

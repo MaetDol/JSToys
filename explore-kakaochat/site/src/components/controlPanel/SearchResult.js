@@ -7,6 +7,7 @@ import ExplorerContext from '../../context/explorer.js';
 import Chat from '../kakaoInterface/Chat.js';
 import Notify from '../kakaoInterface/Notify.js';
 import ScrollWrapperElem from '../ScrollWrapper.js';
+import ProgressBar from '../ProgressBar.js';
 
 const Wrapper = styled.div`
   height: 100%;
@@ -39,7 +40,7 @@ const TranslucentChat = styled( Chat )`
   opacity: 0.5;
 `;
 
-function SearchResult({ results, count }) {
+function SearchResult({ results, count, progress }) {
   const explorer = useContext( ExplorerContext );
   const {navigateKakaoInterface} = useContext( KakaoInterfaceContext );
   const navigateTo = cursor => {
@@ -54,8 +55,13 @@ function SearchResult({ results, count }) {
       </Row>
       <ScrollWrapper>
         <Results>
+          { progress !== -1 && (
+            <>
+              <p style={{color: 'var(--text-light)'}}>일치하는 채팅을 찾아내는중..</p>
+              <ProgressBar progress={progress}/>
+            </>
+          )}
           { results.map(({ previous, current, next }, i) => (
-            console.log( previous, current, next) || 
             <Result key={current[0].cursor} onClick={() => navigateTo( current[0].cursor )}>
               <Notify text={current[0].timestamp} />
               { explorer.isChat( previous[0]?.type ) &&
