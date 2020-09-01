@@ -54,10 +54,11 @@ function SearchResult({ results, count }) {
       </Row>
       <ScrollWrapper>
         <Results>
-          { results.map(({ previous, current, next, cursor }, i) => (
+          { results.map(({ previous, current, next }, i) => (
+            console.log( previous, current, next) || 
             <Result key={current[0].cursor} onClick={() => navigateTo( current[0].cursor )}>
               <Notify text={current[0].timestamp} />
-              { explorer.isChat( previous[0].type ) &&
+              { explorer.isChat( previous[0]?.type ) &&
               <TranslucentChat 
                 name={previous[0].name}
                 texts={previous[0].texts}
@@ -70,7 +71,7 @@ function SearchResult({ results, count }) {
                 timestamp={current[0].timestamp}
                 cursor={current[0].cursor}
               />
-              { explorer.isChat( next[0].type ) &&
+              { explorer.isChat( next[0]?.type ) &&
               <TranslucentChat 
                 name={next[0].name}
                 texts={next[0].texts}
