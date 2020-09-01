@@ -99,7 +99,7 @@ export default class FileManager {
     return i;
   }
 
-  async search( query ) {
+  async search( query, loopCallback=()=>{} ) {
     const querySize = this.sizeof( query );
     this.cursor += querySize;
     while( true ) {
@@ -129,6 +129,7 @@ export default class FileManager {
           query 
         };
       }
+      loopCallback();
       this.cursor += this.MAX_CHUNK;
     }
   }
