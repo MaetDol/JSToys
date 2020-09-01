@@ -118,9 +118,10 @@ export default class ExplorManager {
 
   async getNextChat( cursor ) {
     let line = await this.getNextLines( 1, cursor );
-    let chat = [line[0]];
+    let chat = [];
     let lastCursor = this.fileCursor;
-    while( true ) {
+    while( line !== null ) {
+      chat.push( line[0] );
       line = await this.getNextLines( 1 );
       if( line === null ) {
         break;
@@ -130,7 +131,6 @@ export default class ExplorManager {
         return chat;
       }
       lastCursor = this.fileCursor;
-      chat.push( line[0] );
     }
 
     return chat;
