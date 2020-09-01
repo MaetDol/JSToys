@@ -67,12 +67,13 @@ export default class ExplorManager {
     );
   }
   
-  async searchAll( query ) {
+  async searchAll( query, loopCallback=()=>{} ) {
     this.exitSearch = false;
     this.fileCursor = 0;
     let results = [];
+    const callback = () => loopCallback( this );
     while( true ) {
-      const matched = await this.fileManager.search( query );
+      const matched = await this.fileManager.search( query, callback );
       const isEnd = matched === null || this.exitSearch;
       if( isEnd ) {
         return results;
@@ -81,8 +82,8 @@ export default class ExplorManager {
     }
   }
 
-  async search( query ) {
-    return await this.fileManager.search( query );
+  async search( query, callback ) {
+    return await this.fileManager.search( query, callback );
   }
 
   async readlines( n, isReverse, cursor=null ) {
