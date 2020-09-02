@@ -118,12 +118,13 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scroll]);
 
+  const [scrollTargetCursor, setScrollTargetCursor] = useState(-1);
   useEffect(() => {
     const loadChats = async () => {
       const {previous, current, next} = await explorer.getWrappedChats( 
         navigateInfo.count, navigateInfo.cursor 
       );
-      setScroll(0);
+      setScrollTargetCursor( current[0].cursor );
       setLoadedChats([...previous, ...current, ...next]);
       initNavigateInfo();
     };
@@ -132,6 +133,16 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigateInfo]);
+
+  const scrollTo = ({ current: elem }) => {
+    const parentHeight = elem.parentElement.parentElement.offsetHeight;
+    const refHeight = elem.offsetHeight;
+    let scrollTop = elem.offsetTop + refHeight / 2 - parentHeight / 2;
+    scrollTop = scrollTop < 0 ? 0 : scrollTop;
+
+    setScroll( scrollTop );
+    setScrollTargetCursor( -1 );
+  };
 
   return (
     <Frame>
@@ -157,7 +168,9 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
                   timestamp={timestamp}
                   cursor={cursor}
                   key={cursor}
-                  onMount={updateLastChatOffset}
+                  onMount={ cursor === scrollTargetCursor ? 
+                    scrollTo : updateLastChatOffset
+                  }
                 />);
             } else if( explorer.isSystemMessage( type )) {
               return <Notify key={cursor} text={texts.join('\n')} />;
