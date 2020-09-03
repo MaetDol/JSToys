@@ -9,7 +9,7 @@ function KakaoInterfaceProvider({ children }) {
   const [scroll, setScroll] = useState(-1);
   const initNavigateData = {
     cursor: 0,
-    counts: 0
+    count: 0
   };
   const [navigateInfo, navigateKakaoInterface] = useState( initNavigateData );
   const initNavigateInfo = () => navigateKakaoInterface( initNavigateData );
