@@ -6,10 +6,13 @@ export default class ExplorManager {
 
     this.MOBILE_TIMESTAMP_FORM = `\\d{4}년 \\d{1,2}월 \\d{1,2}일 오. \\d{1,2}:\\d{2}`;
     this.MOBILE_TIMESTAMP_REGEX = new RegExp( this.MOBILE_TIMESTAMP_FORM );
-    this.chatType = {};
-    this.chatType.CHAT = 0;
-    this.chatType.SYSTEM_MESSAGE = 1;
-    this.chatType.TIMESTAMP = 2;
+    this.chatType = {
+      INVALID: -1,
+      END_OF_FILE: 0,
+      CHAT: 1,
+      SYSTEM_MESSAGE: 2,
+      TIMESTAMP: 3
+    };
   }
 
   set fileCursor( pos ) {
@@ -212,35 +215,34 @@ export default class ExplorManager {
   }
 
   parse( lines ) {
+    if( lines.length === 0 ) {
+      return { type: this.chatType.END_OF_FILE };
+    }
     const regex = new RegExp(`(${this.MOBILE_TIMESTAMP_FORM})(, ((.+) : )?(.+))?`);
     let matched = lines[0].match( regex );
     // Invalid format
     if( matched === null ) {
-      return {
-        type: -1
-      };
+      return { type: this.chatType.INVALID };
     }
     lines.shift();
-    const dataset = {
-      timestamp: matched[1]
-    };
+    let texts, type, name, timestamp = matched[1];
     // Timestamp only
     if( matched[5] === undefined ) {
-      dataset.type = this.chatType.TIMESTAMP;
+      type = this.chatType.TIMESTAMP;
     }
     // System message
     else if( matched[4] === undefined ) {
-      dataset.texts = [matched[5], ...lines];
-      dataset.type = this.chatType.SYSTEM_MESSAGE;
+      texts = [matched[5], ...lines];
+      type = this.chatType.SYSTEM_MESSAGE;
     }
     // User chat
     else if( matched[3] && matched[4] ) {
-      dataset.name = matched[4];
-      dataset.texts = [matched[5], ...lines];
-      dataset.type = this.chatType.CHAT;
+      name = matched[4];
+      texts = [matched[5], ...lines];
+      type = this.chatType.CHAT;
     }
 
-    return dataset;
+    return {texts, type, name, timestamp};
   }
 
   async indexingDates() {
@@ -270,30 +272,30 @@ export default class ExplorManager {
   async getParsedChats( direction, count, cursor=this.fileCursor ) {
     this.isReading = true;
     this.fileCursor = cursor;
+    let next = () => {};
     const chats = [];
     switch( direction ) {
       case 'NEXT':
-        for( let i=0; i < count; i++ ) {
-          chats.push({
-            cursor: this.fileCursor,
-            chat: await this.getNextChat()
-          })
-        }
+        next = this.getNextChat.bind( this );
         break;
       case 'PREVIOUS':
-        for( let i=0; i < count; i++ ) {
-          chats.push({
-            cursor: this.fileCursor,
-            chat: await this.getPreviousChat()
-          })
-        }
+        next = this.getPreviousChat.bind( this );
         break;
       default:
         this.isReading = false;
         throw new Error('Invalid direction value: ', direction );
     }
+    for( let i=0; i < count; i++ ) {
+      const cursor = this.fileCursor;
+      const chat = this.parse( await next() );
+      if( chat.type === this.END_OF_FILE ) {
+        break;
+      }
+      chats.push({ ...chat, cursor });
+    }
     this.isReading = false;
-    return chats.map(({ chat, cursor }) => ({...this.parse( chat ), cursor}) );
+    return chats;
   }
+
 
 }
