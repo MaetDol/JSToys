@@ -13,6 +13,21 @@ export default class ExplorManager {
       SYSTEM_MESSAGE: 2,
       TIMESTAMP: 3
     };
+    
+    const methodsBeLocked = [
+      this.getWrappedChats,
+      this.getParsedChats,
+      this.searchAll,
+    ];
+    const self = this;
+    methodsBeLocked.forEach( method => {
+      this[method.name] = async function() {
+        self.isReading = true;
+        const result = await method.call( self, ...arguments );
+        self.isReading = false;
+        return result;
+      };
+    });
   }
 
   set fileCursor( pos ) {
@@ -171,8 +186,6 @@ export default class ExplorManager {
   }
 
   async getWrappedChats( n, cursor=this.fileCursor ) {
-
-    this.isReading = true;
     this.fileCursor = cursor;
     const previous = [];
     for( let i=0; i < n; i++ ) {
@@ -202,7 +215,6 @@ export default class ExplorManager {
       });
     }
 
-    this.isReading = false;
     return {
       previous,
       current: [current],
@@ -270,7 +282,6 @@ export default class ExplorManager {
   }
 
   async getParsedChats( direction, count, cursor=this.fileCursor ) {
-    this.isReading = true;
     this.fileCursor = cursor;
     let next = () => {};
     const chats = [];
@@ -282,7 +293,6 @@ export default class ExplorManager {
         next = this.getPreviousChat.bind( this );
         break;
       default:
-        this.isReading = false;
         throw new Error('Invalid direction value: ', direction );
     }
     for( let i=0; i < count; i++ ) {
@@ -293,7 +303,6 @@ export default class ExplorManager {
       }
       chats.push({ ...chat, cursor });
     }
-    this.isReading = false;
     return chats;
   }
 
