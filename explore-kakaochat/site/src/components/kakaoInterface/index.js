@@ -64,23 +64,9 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
   const explorer = useContext( ExplorerContext );
   const {
     loadedChats, setLoadedChats,
-    loading, setLoading,
     scroll, setScroll,
     navigateInfo, initNavigateInfo,
   } = useContext( KakaoInterfaceContext );
-  const loadContents = async counts => {
-    setLoading( true );
-    const chats = [...loadedChats];
-    for( let i=0; i < counts; i++ ) {
-      const chatObj = {
-        cursor: explorer.fileCursor,
-        ...explorer.parse( await explorer.getNextChat() )
-      };
-      chats.push( chatObj );
-    }
-    setLoadedChats( chats );
-    setLoading( false );
-  };
 
   const changeFile = async e => {
     const files = e.target.files;
@@ -90,7 +76,7 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
       const cursors = Object.values( explorer.cursorByDates );
       const startPosition = cursors.sort((a,b) => a-b)[0];
       explorer.fileCursor = startPosition;
-      await loadContents( 20 );
+      setLoadedChats( await explorer.getParsedChats('NEXT', 20) );
     }
   };
 
@@ -100,12 +86,17 @@ function KakaoInterface({ chatRoomTitle, numberOfPeople }) {
   };
 
   const loadByScroll = e => {
-    if( loading ) {
+    if( explorer.isReading ) {
       return;
     }
     const scrollPosition = e.target.scrollTop + e.target.offsetHeight;
     if( scrollPosition > lastChatOffset ) {
-      loadContents( 10 );
+      explorer.getParsedChats('NEXT', 10).then( chats => {
+        setLoadedChats([
+          ...loadedChats,
+          ...chats
+        ]);
+      });
     }
   };
   

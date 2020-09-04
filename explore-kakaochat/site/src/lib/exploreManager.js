@@ -32,6 +32,14 @@ export default class ExplorManager {
     this.fileManager.file = file;
   }
 
+  set isReading( state ) {
+    this._isReading = state;
+  }
+
+  get isReading() {
+    return this._isReading;
+  }
+
   escapeRegExp( str ) {
     return str.replace(/[.*+\-?^${}()|[\]\\/]/g, '\\$&').replace(/\n/g,'\\n');
   }
@@ -161,6 +169,7 @@ export default class ExplorManager {
 
   async getWrappedChats( n, cursor=this.fileCursor ) {
 
+    this.isReading = true;
     this.fileCursor = cursor;
     const previous = [];
     for( let i=0; i < n; i++ ) {
@@ -190,6 +199,7 @@ export default class ExplorManager {
       });
     }
 
+    this.isReading = false;
     return {
       previous,
       current: [current],
@@ -256,4 +266,34 @@ export default class ExplorManager {
   isSystemMessage( type ) {
     return type === this.chatType.SYSTEM_MESSAGE;
   }
+
+  async getParsedChats( direction, count, cursor=this.fileCursor ) {
+    this.isReading = true;
+    this.fileCursor = cursor;
+    const chats = [];
+    switch( direction ) {
+      case 'NEXT':
+        for( let i=0; i < count; i++ ) {
+          chats.push({
+            cursor: this.fileCursor,
+            chat: await this.getNextChat()
+          })
+        }
+        break;
+      case 'PREVIOUS':
+        for( let i=0; i < count; i++ ) {
+          chats.push({
+            cursor: this.fileCursor,
+            chat: await this.getPreviousChat()
+          })
+        }
+        break;
+      default:
+        this.isReading = false;
+        throw new Error('Invalid direction value: ', direction );
+    }
+    this.isReading = false;
+    return chats.map(({ chat, cursor }) => ({...this.parse( chat ), cursor}) );
+  }
+
 }
