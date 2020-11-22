@@ -2,6 +2,7 @@ class Shape {
   draw(context) { throw 0; }
   update() { throw 0; }
   collision(shapes) { throw 0; }
+  conflict(shape) { throw 0; }
 }
 
 class Dot extends Shape {
@@ -58,7 +59,21 @@ class DotOfLine extends Dot {
     this.v = Math.abs(nv) > 0.001 ? nv : v;
   }
 
+  gradientOf( dot1, dot2 ) {
+    return (dot1.y - dot2.y) / (dot1.x - dot2.x);
+  }
+
   collision( shapes ) {
+    shapes.filter( s => s.conflict(this) ).forEach( s => {
+      const a = this.gradientOf( s, this );
+      const b = s.y - s.x * a;
+      const {x, y} = this;
+      const rad = Math.atan( (y-s.y) / (x-s.x) );
+      const newX = Math.tan( rad ) * s.r;
+      const newY = (s.x + newX) * a + b;
+      this.y = newY;
+      console.log( newY )
+    });
   }
 }
 
@@ -138,5 +153,7 @@ class Line extends Shape {
     const s = shapes.filter( s => s !== this );
     this.props.dots.forEach( d => d.collision(s) );
   }
+
+  conflict( shape ) { return false; }
 
 }
