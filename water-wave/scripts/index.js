@@ -19,8 +19,8 @@ const cursor = new (class extends Dot {
   }
   conflict( dot ) {
     const {x, y, r} = this;
-    return x+r > dot.x && x-r < dot.x
-      && y+r > dot.y && y-r < dot.y;
+    const distance = Math.sqrt((dot.x - x)**2 + (dot.y - y)**2);
+    return distance < r;
   }
 })({id:-3, x:-50, y:-50, r:10});
 const layer = new Layer( canvas.width, canvas.height, ctx, [line, cursor] );

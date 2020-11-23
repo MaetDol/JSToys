@@ -65,14 +65,7 @@ class DotOfLine extends Dot {
 
   collision( shapes ) {
     shapes.filter( s => s.conflict(this) ).forEach( s => {
-      const a = this.gradientOf( s, this );
-      const b = s.y - s.x * a;
-      const {x, y} = this;
-      const rad = Math.atan( (y-s.y) / (x-s.x) );
-      const newX = Math.tan( rad ) * s.r;
-      const newY = (s.x + newX) * a + b;
-      this.y = newY;
-      console.log( newY )
+      this.y = s.y + s.r;
     });
   }
 }
