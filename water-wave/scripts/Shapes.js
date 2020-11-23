@@ -71,16 +71,16 @@ class DotOfLine extends Dot {
 }
 
 class Line extends Shape {
-  constructor( dot1, dot2, friction=0, DOT_DISTANCE=3 ) {
+  constructor({ dot1, dot2, friction=0, dotDistance=3, color }) {
     super();
     const width = Math.abs( dot1.x - dot2.x ) + Math.abs( dot1.y - dot2.y );
-    const dotCount = Math.floor( width / DOT_DISTANCE ) -1;
+    const dotCount = Math.floor( width / dotDistance ) -1;
     const dots = Array( dotCount ).fill(0).map((_, i) => 
         new DotOfLine({
           id: i,
-          x: dot1.x + (i+1) * DOT_DISTANCE, 
+          x: dot1.x + (i+1) * dotDistance,
           y: dot1.y,
-          r: 2, friction 
+          r: 2, friction
         })
     );
     const prevState = dots.map(({id, x, y, r, friction}) => 
@@ -96,6 +96,7 @@ class Line extends Shape {
       friction,
       dots,
       prevState,
+      color,
     };
   }
 
@@ -105,28 +106,45 @@ class Line extends Shape {
 
   draw( context ) {
     const { start, end, dots } = this.props;
-    context.beginPath();
-    context.moveTo(start.x, start.y);
 
-    let prevVec = {x:0, y:0};
-    let nextVec = {};
+    const water = new Path2D();
+    water.moveTo(start.x, start.y);
+
     dots.forEach((d, i, ds) => {
       const prev = ds[i-1] || start;
       const next = ds[i+1] || end;
-      const a = this.gradientOf( prev, next );
-      const dx = (next.x - d.x);
-      const dy = a * dx;
-      context.quadraticCurveTo (
-        d.x, d.y,
-        next.x, next.y
+
+      const distance_x = next.x - prev.x;
+      const left = {
+        x: prev.x + distance_x * 0.25,
+        y: (prev.y - d.y)/2 + d.y
+      };
+      const right = {
+        x: prev.x + distance_x*0.75,
+        y: (next.y - d.y)/2 + d.y
+      };
+      const a = this.gradientOf( left, right );
+      const b = left.y - a*left.x;
+      const gradient_y = a*d.x + b;
+      const control_y = gradient_y + (d.y - gradient_y)*2;
+
+      if( i === 0 ) {
+        water.lineTo(left.x, left.y);
+      }
+
+      water.quadraticCurveTo(
+        d.x, control_y,
+        right.x*1.001, right.y
       );
-
-      prevVec = {x: dx, y: dy};
     });
-    context.lineTo(end.x, end.y);
+    water.lineTo(end.x, end.y);
+    water.lineTo(end.x, end.y + 200);
+    water.lineTo(start.x, start.y + 200);
+    water.closePath();
 
-    context.stroke();
-    context.closePath();
+    context.fillStyle = this.props.color;
+    context.fill( water );
+
 
     start.draw( context )
     end.draw( context )
@@ -149,4 +167,17 @@ class Line extends Shape {
 
   conflict( shape ) { return false; }
 
+}
+
+class SubLine extends Line {
+  constructor(args){
+    super(args);
+    this.w = args.weight;
+    this.p = args.parent;
+  }
+  update() {
+    this.props.dots.forEach((d, i) => {
+      d.v = this.p.props.dots[i].v;
+    });
+  }
 }
