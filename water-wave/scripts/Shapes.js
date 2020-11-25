@@ -123,30 +123,48 @@ class Line extends Shape {
       const prev = ds[i-1] || start;
       const next = ds[i+1] || end;
 
-      const nextDirection = Math.sign( next.y - d.y );
-      const isSameDirection = direction && direction === nextDirection;
-      let f = x=>{};
-      if( isSameDirection ) {
-        const a = this.gradientOf( pairControlPoint, d );
+      const leftDirection = Math.sign( d.y - prev.y );
+      const rightDirection = Math.sign( next.y - d.y );
+      const isLinear = leftDirection === rightDirection;
+      const isMidOfLinear = isLinear && direction === leftDirection;
+
+      const leftDistance = d.x - prev.x;
+      const rightDistance = next.x - d.x;
+      let controlPoints;
+      if( isLinear ) {
+        const basePoint = isMidOfLinear ? pairControlPoint : prev;
+        const a = this.gradientOf( basePoint, d );
         const b = this.constBOf( a, d );
-        f = (x, y) => {
+        const f = (x, y) => {
           const cp_y = a*x + b;
-          return cp_y * nextDirection < y * nextDirection ? 
+          return cp_y * leftDirection < y * leftDirection ? 
             {x, y: cp_y} : {x: (y-b)/a, y};
         };
+        const distance = d.x - basePoint.x;
+        controlPoints = [
+          isMidOfLinear ? pairControlPoint : f(basePoint.x + distance/2 , d.y),
+          f(d.x + rightDistance/2, next.y)
+        ];
+      } else {
+        controlPoints = [
+          {
+            x: leftDistance/2 + prev.x,
+            y: d.y,
+          },
+          {
+            x: rightDistance/2 + d.x,
+            y: d.y,
+          }
+        ];
       }
-      const controlPoint = isSameDirection ? pairControlPoint : {x: pairControlPoint.x, y: d.y};
-      direction = nextDirection;
-
+      direction = leftDirection;
+      
       water.bezierCurveTo(
         pairControlPoint.x, pairControlPoint.y,
-        controlPoint.x, controlPoint.y,
+        controlPoints[0].x, controlPoints[0].y,
         d.x, d.y
-      );
-      
-      const nextCp_x = d.x + (next.x - d.x)/2;
-      pairControlPoint = isSameDirection ? f(nextCp_x, next.y) : { x: nextCp_x, y: d.y };
-
+        );
+      pairControlPoint = controlPoints[1];
     });
 
     const prev = dots[dots.length-1];
