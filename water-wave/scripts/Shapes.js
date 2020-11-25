@@ -104,20 +104,48 @@ class Line extends Shape {
     return (dot1.y - dot2.y) / (dot1.x - dot2.x);
   }
 
+  constBOf( gradient, dot ) {
+    return dot.y - gradient*dot.x;
+  }
+
   draw( context ) {
     const { start, end, dots } = this.props;
 
     const water = new Path2D();
     water.moveTo(start.x, start.y);
 
+    let direction = 0;
+    let pairControlPoint = {
+      x: start.x + (dots[0].x - start.x)/2,
+      y: start.y,
+    };
     dots.forEach((d, i, ds) => {
       const prev = ds[i-1] || start;
-      const dist = d.x - prev.x;
+      const next = ds[i+1] || end;
+
+      const nextDirection = Math.sign( next.y - d.y );
+      const isSameDirection = direction && direction === nextDirection;
+      let f = x=>{};
+      if( isSameDirection ) {
+        const a = this.gradientOf( pairControlPoint, d );
+        const b = this.constBOf( a, d );
+        f = (x, y) => {
+          const cp_y = a*x + b;
+          return cp_y * nextDirection < y * nextDirection ? 
+            {x, y: cp_y} : {x: (y-b)/a, y};
+        };
+      }
+      const controlPoint = isSameDirection ? pairControlPoint : {x: pairControlPoint.x, y: d.y};
+      direction = nextDirection;
+
       water.bezierCurveTo(
-        prev.x + dist/2, prev.y,
-        d.x - dist/2, d.y,
+        pairControlPoint.x, pairControlPoint.y,
+        controlPoint.x, controlPoint.y,
         d.x, d.y
       );
+      
+      const nextCp_x = d.x + (next.x - d.x)/2;
+      pairControlPoint = isSameDirection ? f(nextCp_x, next.y) : { x: nextCp_x, y: d.y };
 
     });
 
