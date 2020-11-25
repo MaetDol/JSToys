@@ -14,11 +14,11 @@ const line = new Line({
 const sub1 = new SubLine({
   dot1: new Dot({id:-1, x:100, y:200, r:4}),
   dot2: new Dot({id:-2, x:800, y:200, r:4}),
-  friction: 0.9,
+  friction: 0.92,
   dotDistance: 50,
-  color: '#ffff218c',
+  color: '#ff4425c9',
   parent: line,
-  weight: 0.9,
+  weight: 0.7,
 });
 
 const sub2 = new SubLine({
@@ -26,9 +26,9 @@ const sub2 = new SubLine({
   dot2: new Dot({id:-2, x:800, y:200, r:4}),
   friction: 0.9,
   dotDistance: 50,
-  color: '#ff4425c9',
-  parent: line,
-  weight: 0.9,
+  color:'#ffff218c', 
+  parent: sub1,
+  weight: 0.7,
 });
 
 const cursor = new (class extends Dot {
@@ -44,8 +44,15 @@ const cursor = new (class extends Dot {
     return distance < r;
   }
 })({id:-3, x:-50, y:-50, r:20});
-const layer = new Layer( canvas.width, canvas.height, ctx, [sub1, sub2, line, cursor] );
-layer.render();
+
+const renderer = new Renderer( 
+  canvas.width, canvas.height, ctx, 
+  [
+    [sub1, sub2],
+    [line, cursor], 
+  ], 
+);
+renderer.render();
 
 canvas.addEventListener('mousemove', e => {
   cursor.x = e.clientX;
