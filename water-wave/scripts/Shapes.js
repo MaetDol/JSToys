@@ -112,31 +112,23 @@ class Line extends Shape {
 
     dots.forEach((d, i, ds) => {
       const prev = ds[i-1] || start;
-      const next = ds[i+1] || end;
-
-      const distance_x = next.x - prev.x;
-      const left = {
-        x: prev.x + distance_x * 0.25,
-        y: (prev.y - d.y)/2 + d.y
-      };
-      const right = {
-        x: prev.x + distance_x*0.75,
-        y: (next.y - d.y)/2 + d.y
-      };
-      const a = this.gradientOf( left, right );
-      const b = left.y - a*left.x;
-      const gradient_y = a*d.x + b;
-      const control_y = gradient_y + (d.y - gradient_y)*2;
-
-      if( i === 0 ) {
-        water.lineTo(left.x, left.y);
-      }
-
-      water.quadraticCurveTo(
-        d.x, control_y,
-        right.x*1.001, right.y
+      const dist = d.x - prev.x;
+      water.bezierCurveTo(
+        prev.x + dist/2, prev.y,
+        d.x - dist/2, d.y,
+        d.x, d.y
       );
+
     });
+
+    const prev = dots[dots.length-1];
+    const dist = end.x - prev.x;
+    water.bezierCurveTo(
+      prev.x + dist/2, prev.y,
+      end.x - dist/2, end.y,
+      end.x, end.y,
+    );
+
     water.lineTo(end.x, end.y);
     water.lineTo(end.x, end.y + 200);
     water.lineTo(start.x, start.y + 200);
@@ -176,8 +168,14 @@ class SubLine extends Line {
     this.p = args.parent;
   }
   update() {
-    this.props.dots.forEach((d, i) => {
-      d.v = this.p.props.dots[i].v;
+    const {dots, prevState, friction, w} = this.props;
+    dots.forEach((d, i) => {
+      const parentDot = this.p.props.dots[i];
+      const parentDistance = parentDot.props.initPos.y - parentDot.y;
+      const distance = d.props.initPos.y - d.y;
+      d.v += -(parentDistance * this.w - distance) * 0.03;
+      d.update([...prevState]);
     });
+    prevState.forEach((d, i) => d.props = {...dots[i].props});
   }
 }
