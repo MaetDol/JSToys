@@ -58,3 +58,13 @@ canvas.addEventListener('mousemove', e => {
   cursor.x = e.clientX;
   cursor.y = e.clientY;
 });
+
+
+window.addEventListener('resize', e => {
+  const w = e.target.innerWidth;
+  const h = e.target.innerHeight;
+  canvas.width = w;
+  canvas.height = h;
+  renderer.width = w;
+  renderer.height = h;
+});
