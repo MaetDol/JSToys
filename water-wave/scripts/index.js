@@ -3,17 +3,20 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const ctx = canvas.getContext('2d');
 
+const startDot = _=> new Dot({id:-1, x:200, y:200, r:4});
+const endDot = _=> new Dot({id:-2, x:1000, y:200, r:4});
+
 const line = new Line({
-  dot1: new Dot({id:-1, x:100, y:200, r:4}),
-  dot2: new Dot({id:-2, x:800, y:200, r:4}),
+  dot1: startDot(),
+  dot2: endDot(),
   friction: 0.9,
   dotDistance: 50,
   color: '#39a4ff8c'
 });
 
 const sub1 = new SubLine({
-  dot1: new Dot({id:-1, x:100, y:200, r:4}),
-  dot2: new Dot({id:-2, x:800, y:200, r:4}),
+  dot1: startDot(),
+  dot2: endDot(),
   friction: 0.92,
   dotDistance: 50,
   color: '#ff4425c9',
@@ -22,8 +25,8 @@ const sub1 = new SubLine({
 });
 
 const sub2 = new SubLine({
-  dot1: new Dot({id:-1, x:100, y:200, r:4}),
-  dot2: new Dot({id:-2, x:800, y:200, r:4}),
+  dot1: startDot(),
+  dot2: endDot(),
   friction: 0.9,
   dotDistance: 50,
   color:'#ffff218c', 
