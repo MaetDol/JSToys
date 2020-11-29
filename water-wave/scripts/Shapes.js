@@ -30,6 +30,20 @@ class Dot extends Shape {
   set v(v) { this.props.v = v; }
   set friction(v) { this.props.friction = v; }
 
+  static sum(...dots) {
+    return dots.reduce((sum, d) => {
+      sum.x += d.x;
+      sum.y += y.x;
+      return sum;
+    });
+  }
+
+  multiply( value ) {
+    this.x *= value;
+    this.y *= value;
+    return this;
+  }
+
   draw( context ) {
     context.beginPath();
     context.fillStyle = 'black';
@@ -100,6 +114,15 @@ class Line extends Shape {
     };
   }
 
+  bezierCurveFormula(t, start, end, cp1, cp2) {
+    const dis = 1-t;
+    start = start.multiply( dis**3 );
+    cp1 = cp1.multiply( 3 * dis**2 );
+    cp2 = cp2.multiply( 3 * dis * t**2 );
+    end = end.multiply( t**3 );
+    return Dot.sum( start, cp1, cp2, end );
+  }
+
   gradientOf( dot1, dot2 ) {
     return (dot1.y - dot2.y) / (dot1.x - dot2.x);
   }
@@ -163,7 +186,7 @@ class Line extends Shape {
         pairControlPoint.x, pairControlPoint.y,
         controlPoints[0].x, controlPoints[0].y,
         d.x, d.y
-        );
+      );
       pairControlPoint = controlPoints[1];
     });
 
