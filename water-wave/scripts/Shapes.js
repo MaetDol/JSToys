@@ -6,10 +6,10 @@ class Shape {
 }
 
 class Dot extends Shape {
-  constructor({id, x, y, r, friction=0}) {
+  constructor({id=-1, x, y, r=0, friction=0, color='black'}) {
     super();
     this.props = {
-      id, x, y, r, friction,
+      id, x, y, r, friction, color,
       v: 0,
       w: 0.01,
       initPos: {x, y}
@@ -46,7 +46,7 @@ class Dot extends Shape {
 
   draw( context ) {
     context.beginPath();
-    context.fillStyle = 'black';
+    context.fillStyle = this.color;
     context.arc( this.x, this.y, this.r, 0, Math.PI*2 );
     context.fill();
   }
@@ -94,9 +94,16 @@ class Line extends Shape {
           id: i,
           x: dot1.x + (i+1) * dotDistance,
           y: dot1.y,
-          r: 2, friction
+          r: 2, friction,
+          color: '',
         })
     );
+    dots.forEach((d, i, arr) => {
+      d.bezier = {
+        cp1: (arr[i-1] || dot1), 
+        cp2: d,
+      };
+    });
     const prevState = dots.map(({id, x, y, r, friction}) => 
       new DotOfLine({id, x, y, r, friction})
     );
@@ -111,6 +118,7 @@ class Line extends Shape {
       dots,
       prevState,
       color,
+      dotDistance,
     };
   }
 
@@ -138,10 +146,10 @@ class Line extends Shape {
     water.moveTo(start.x, start.y);
 
     let direction = 0;
-    let pairControlPoint = {
+    let pairControlPoint = new Dot({
       x: start.x + (dots[0].x - start.x)/2,
       y: start.y,
-    };
+    })
     dots.forEach((d, i, ds) => {
       const prev = ds[i-1] || start;
       const next = ds[i+1] || end;
@@ -160,8 +168,8 @@ class Line extends Shape {
         const b = this.constBOf( a, d );
         const f = (x, y) => {
           const cp_y = a*x + b;
-          return cp_y * leftDirection < y * leftDirection ? 
-            {x, y: cp_y} : {x: (y-b)/a, y};
+          const isBetweenDots = cp_y * leftDirection < y * leftDirection;
+          return new Dot( isBetweenDots ? {x, y:cp_y} : {x: (y-b)/a, y});
         };
         const distance = d.x - basePoint.x;
         controlPoints = [
@@ -170,14 +178,14 @@ class Line extends Shape {
         ];
       } else {
         controlPoints = [
-          {
+          new Dot({
             x: leftDistance/2 + prev.x,
             y: d.y,
-          },
-          {
+          }),
+          new Dot({
             x: rightDistance/2 + d.x,
             y: d.y,
-          }
+          }),
         ];
       }
       direction = leftDirection;
@@ -187,6 +195,10 @@ class Line extends Shape {
         controlPoints[0].x, controlPoints[0].y,
         d.x, d.y
       );
+      d.bezier = {
+        cp1: pairControlPoint,
+        cp2: controlPoints[0]
+      };
       pairControlPoint = controlPoints[1];
     });
 
@@ -222,8 +234,28 @@ class Line extends Shape {
   }
 
   collision( shapes ) {
-    const s = shapes.filter( s => s !== this );
-    this.props.dots.forEach( d => d.collision(s) );
+    const { start, end, dots, dotDistance } = this.props;
+    for( const s of shapes ) {
+      if( s.x < start.x || s.x > end.x ) continue;
+      if( s === this ) continue;
+
+      const idx = Math.floor( (s.x - start.x) / dotDistance );
+      if( idx > dots.length || idx < 0 ) continue;
+
+      const prev = dots[idx-1] || start;
+      const dot = dots[idx];
+      const{ cp1, cp2 } = dot.bezier;
+      const t = (s.x - prev.x) / dotDistance;
+      const conflictPoint = this.bezierCurveFormula( t, prev, dot, cp1, cp2 );
+      if( s.conflict( conflictPoint )) {
+        dot.v += (1-t) * 0.05;
+        if( prev === start ) break;
+        prev.v += t * 0.05;
+      }
+    }
+      
+    // const s = shapes.filter( s => s !== this );
+    // this.props.dots.forEach( d => d.collision(s) );
   }
 
   conflict( shape ) { return false; }
@@ -247,4 +279,5 @@ class SubLine extends Line {
     });
     prevState.forEach((d, i) => d.props = {...dots[i].props});
   }
+  collision() { return false; }
 }
