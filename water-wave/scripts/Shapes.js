@@ -6,7 +6,7 @@ class Shape {
 }
 
 class Dot extends Shape {
-  constructor({id=-1, x, y, r=0, friction=0, color='black'}) {
+  constructor({id=-1, x=0, y=0, r=0, friction=0, color='black'}={}) {
     super();
     this.props = {
       id, x, y, r, friction, color,
@@ -33,15 +33,16 @@ class Dot extends Shape {
   static sum(...dots) {
     return dots.reduce((sum, d) => {
       sum.x += d.x;
-      sum.y += y.x;
+      sum.y += d.y;
       return sum;
-    });
+    }, new Dot());
   }
 
   multiply( value ) {
-    this.x *= value;
-    this.y *= value;
-    return this;
+    return new Dot({
+      x: this.x * value,
+      y: this.y * value,
+    });
   }
 
   draw( context ) {
@@ -85,7 +86,7 @@ class DotOfLine extends Dot {
 }
 
 class Line extends Shape {
-  constructor({ dot1, dot2, friction=0, dotDistance=3, color }) {
+  constructor({ dot1, dot2, friction=0, dotDistance=3, color, height }) {
     super();
     const width = Math.abs( dot1.x - dot2.x ) + Math.abs( dot1.y - dot2.y );
     const dotCount = Math.floor( width / dotDistance ) -1;
@@ -119,13 +120,14 @@ class Line extends Shape {
       prevState,
       color,
       dotDistance,
+      height,
     };
   }
 
   bezierCurveFormula(t, start, end, cp1, cp2) {
     const dis = 1-t;
     start = start.multiply( dis**3 );
-    cp1 = cp1.multiply( 3 * dis**2 );
+    cp1 = cp1.multiply( 3 * dis**2 * t );
     cp2 = cp2.multiply( 3 * dis * t**2 );
     end = end.multiply( t**3 );
     return Dot.sum( start, cp1, cp2, end );
@@ -140,7 +142,7 @@ class Line extends Shape {
   }
 
   draw( context ) {
-    const { start, end, dots } = this.props;
+    const { start, end, dots, height } = this.props;
 
     const water = new Path2D();
     water.moveTo(start.x, start.y);
@@ -211,8 +213,8 @@ class Line extends Shape {
     );
 
     water.lineTo(end.x, end.y);
-    water.lineTo(end.x, end.y + 200);
-    water.lineTo(start.x, start.y + 200);
+    water.lineTo(end.x, end.y + height);
+    water.lineTo(start.x, start.y + height);
     water.closePath();
 
     context.fillStyle = this.props.color;
@@ -223,7 +225,7 @@ class Line extends Shape {
     end.draw( context )
 
     for( const d of dots ) {
-      d.draw( context );
+      // d.draw( context );
     }
   }
 
@@ -240,22 +242,19 @@ class Line extends Shape {
       if( s === this ) continue;
 
       const idx = Math.floor( (s.x - start.x) / dotDistance );
-      if( idx > dots.length || idx < 0 ) continue;
+      if( idx >= dots.length || idx < 0 ) continue;
 
       const prev = dots[idx-1] || start;
-      const dot = dots[idx];
+      const dot = dots[idx] || end;
       const{ cp1, cp2 } = dot.bezier;
       const t = (s.x - prev.x) / dotDistance;
       const conflictPoint = this.bezierCurveFormula( t, prev, dot, cp1, cp2 );
       if( s.conflict( conflictPoint )) {
-        dot.v += (1-t) * 0.05;
-        if( prev === start ) break;
-        prev.v += t * 0.05;
+        const f = Math.abs( (conflictPoint.y - s.y) * 0.2 );
+        dot.v += f * t;
+        prev.v += f * (1-t);
       }
     }
-      
-    // const s = shapes.filter( s => s !== this );
-    // this.props.dots.forEach( d => d.collision(s) );
   }
 
   conflict( shape ) { return false; }
