@@ -219,14 +219,6 @@ class Line extends Shape {
 
     context.fillStyle = this.props.color;
     context.fill( water );
-
-
-    start.draw( context )
-    end.draw( context )
-
-    for( const d of dots ) {
-      // d.draw( context );
-    }
   }
 
   update() {
