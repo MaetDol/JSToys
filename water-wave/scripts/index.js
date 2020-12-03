@@ -40,18 +40,12 @@ const sub2 = new SubLine({
 });
 
 const cursor = new (class extends Dot {
-  draw( context ) {
-    context.beginPath();
-    context.fillStyle = '#00000088';
-    context.arc( this.x, this.y, this.r, 0, Math.PI*2 );
-    context.fill();
-  }
   conflict( dot ) {
     const {x, y, r} = this;
     const distance = Math.sqrt((dot.x - x)**2 + (dot.y - y)**2);
     return distance < r;
   }
-})({id:-3, x:-50, y:-50, r:20});
+})({id:-3, x:-50, y:-50, r:20, color:'#00000088'});
 
 const renderer = new Renderer( 
   canvas.width, canvas.height, ctx, 
@@ -75,6 +69,13 @@ window.addEventListener('resize', e => {
   canvas.height = renderer.height = h;
 });
 
+
+const duck = new (class extends Shape {
+  draw( context ) {
+    const {x, y, w, h} = this.props;
+    context.strokeRect( x, y, w, h );
+  }
+})();
 
 
 function waveLoop( line, queue ) {
