@@ -46,9 +46,10 @@ class Dot extends Shape {
   }
 
   draw( context ) {
+    const { color, x, y, r } = this.props;
     context.beginPath();
-    context.fillStyle = this.color;
-    context.arc( this.x, this.y, this.r, 0, Math.PI*2 );
+    context.fillStyle = color;
+    context.arc( x, y, r, 0, Math.PI*2 );
     context.fill();
   }
 
