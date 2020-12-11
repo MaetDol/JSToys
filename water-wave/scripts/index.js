@@ -13,7 +13,7 @@ const line = new Line({
   dot2: endDot(),
   friction: 0.9,
   dotDistance: 50,
-  color: '#39a4ff8c',
+  color: '#39a4ff7f',
   height: halfHeight,
 });
 
@@ -22,10 +22,10 @@ const sub1 = new SubLine({
   dot2: endDot(),
   friction: 0.92,
   dotDistance: 50,
-  color: '#ff4425c9',
+  color: '#ff442599',
   parent: line,
   weight: 0.7,
-  height: halfHeight - 100,
+  height: halfHeight,
 });
 
 const sub2 = new SubLine({
@@ -33,10 +33,10 @@ const sub2 = new SubLine({
   dot2: endDot(),
   friction: 0.9,
   dotDistance: 50,
-  color:'#ffff218c', 
+  color:'#ffff217f', 
   parent: sub1,
   weight: 0.7,
-  height: halfHeight - 50,
+  height: halfHeight,
 });
 
 const cursor = new (class extends Dot {
@@ -47,9 +47,37 @@ const cursor = new (class extends Dot {
   }
 })({id:-3, x:-50, y:-50, r:20, color:'#00000088'});
 
+const duck = new (class extends Shape {
+  constructor(args) { super(args); this.props = args }
+  draw( context ) {
+    const {x, y, w, h} = this.props;
+    context.strokeStyle = 'black';
+    console.log(x,y,w,h)
+    context.strokeRect( x, y, w, h );
+  }
+  collision() {}
+})({x: line.props.dots[10].props.x, y: line.props.dots[10].props.y, w:100, h:100 });
+
+const waveText = new (class extends Shape {
+  draw( context ) {
+    context.fillStyle = '#494B4D';
+    context.font = '120px "Bebas Neue"';
+    let lastX = 120;
+    const top = halfHeight + 60;
+    [...'WAVE'].forEach( ch => {
+      const text = context.measureText( ch );
+      context.fillText( ch, lastX, top );
+      lastX += text.width + 25;
+    });
+  }
+  update() {}
+  collision() {}
+})();
+
 const renderer = new Renderer( 
   canvas.width, canvas.height, ctx, 
   [
+    [waveText],
     [sub1, sub2],
     [line, cursor], 
   ], 
@@ -61,21 +89,12 @@ canvas.addEventListener('mousemove', e => {
   cursor.y = e.clientY;
 });
 
-
 window.addEventListener('resize', e => {
   const w = e.target.innerWidth;
   const h = e.target.innerHeight;
   canvas.width = renderer.width = w;
   canvas.height = renderer.height = h;
 });
-
-
-const duck = new (class extends Shape {
-  draw( context ) {
-    const {x, y, w, h} = this.props;
-    context.strokeRect( x, y, w, h );
-  }
-})();
 
 
 function waveLoop( line, queue ) {
