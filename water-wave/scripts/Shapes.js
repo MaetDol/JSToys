@@ -55,7 +55,7 @@ class Dot extends Shape {
 
   update() {}
   collision( shapes ) {}
-} 
+}
 
 class DotOfLine extends Dot {    
   constructor(args) { 
