@@ -48,15 +48,20 @@ const cursor = new (class extends Dot {
 })({id:-3, x:-50, y:-50, r:20, color:'#00000088'});
 
 const duck = new (class extends Shape {
-  constructor(args) { super(args); this.props = args }
+  constructor() { super(); this.props = {}; }
   draw( context ) {
-    const {x, y, w, h} = this.props;
+    const {x, y, gradient} = this.props;
+    const w = 160;
+    const h = 80;
     context.strokeStyle = 'black';
-    console.log(x,y,w,h)
-    context.strokeRect( x, y, w, h );
+    context.rotate( gradient );
+    context.strokeRect( x-w/2, y-h*0.8, w, h );
+    context.rotate( 0 );
   }
+  update() {}
   collision() {}
-})({x: line.props.dots[10].props.x, y: line.props.dots[10].props.y, w:100, h:100 });
+})();
+line.floating( duck );
 
 const waveText = new (class extends Shape {
   draw( context ) {

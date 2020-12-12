@@ -122,6 +122,7 @@ class Line extends Shape {
       color,
       dotDistance,
       height,
+      floated: [],
     };
   }
 
@@ -143,7 +144,9 @@ class Line extends Shape {
   }
 
   draw( context ) {
-    const { start, end, dots, height } = this.props;
+    const { start, end, dots, height, floated } = this.props;
+
+    floated.forEach( s => s.draw( context ) );
 
     const water = new Path2D();
     water.moveTo(start.x, start.y);
@@ -223,9 +226,17 @@ class Line extends Shape {
   }
 
   update() {
-    const { start, end, prevState, dots } = this.props;
+    const { start, end, prevState, dots, floated } = this.props;
     dots.forEach(d => d.update([start, ...prevState, end]));
     prevState.forEach((d, i) => d.props = {...dots[i].props});
+
+    const middle = Math.ceil( dots.length / 2 );
+    const tempDot = dots[middle];
+    floated.forEach( s => {
+      s.props.x = tempDot.x;
+      s.props.y = tempDot.y;
+      s.props.gradient = this.gradientOf(tempDot.bezier.cp1, tempDot.bezier.cp2); 
+    });
   }
 
   collision( shapes ) {
@@ -251,7 +262,7 @@ class Line extends Shape {
   }
 
   conflict( shape ) { return false; }
-
+  floating( shape ) { this.props.floated.push( shape ); }
 }
 
 class SubLine extends Line {
