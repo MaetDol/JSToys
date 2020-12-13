@@ -3,6 +3,12 @@ class Shape {
   update() { throw 0; }
   collision(shapes) { throw 0; }
   conflict(shape) { throw 0; }
+  
+  get x() { return this.props.x; }
+  get y() { return this.props.y; }
+
+  set x(v) { this.props.x = v; }
+  set y(v) { this.props.y = v; }
 }
 
 class Dot extends Shape {
@@ -17,15 +23,12 @@ class Dot extends Shape {
   }
 
   get id() { return this.props.id; }
-  get x() { return this.props.x; }
-  get y() { return this.props.y; }
   get r() { return this.props.r; }
   get v() { return this.props.v; }
   get friction() { return this.props.friction; }
 
   set id(v) { this.props.id = v; }
-  set x(v) { this.props.x = v; }
-  set y(v) { this.props.y = v; }
+
   set r(v) { this.props.r = v; }
   set v(v) { this.props.v = v; }
   set friction(v) { this.props.friction = v; }
@@ -36,6 +39,13 @@ class Dot extends Shape {
       sum.y += d.y;
       return sum;
     }, new Dot());
+  }
+
+  sub( dot ) {
+    return new Dot({
+      x: this.x - dot.x,
+      y: this.y - dot.y,
+    });
   }
 
   multiply( value ) {
@@ -135,6 +145,17 @@ class Line extends Shape {
     return Dot.sum( start, cp1, cp2, end );
   }
 
+  gradientOfBezier(t, start, end, cp1, cp2) {
+    const dis = 1 - t;
+    const x = 3 * dis**2 * (cp1.x - start.x) 
+      + 6 * dis * t * (cp2.x - cp1.x)
+      + 3 * t**2 * (end.x - cp2.x);
+    const y = 3 * dis**2 * (cp1.y - start.y) 
+      + 6 * dis * t * (cp2.y - cp1.y)
+      + 3 * t**2 * (end.y - cp2.y);
+    return y / x;
+  }
+
   gradientOf( dot1, dot2 ) {
     return (dot1.y - dot2.y) / (dot1.x - dot2.x);
   }
@@ -226,26 +247,37 @@ class Line extends Shape {
   }
 
   update() {
-    const { start, end, prevState, dots, floated } = this.props;
+    const { start, end, prevState, dots, floated, dotDistance } = this.props;
     dots.forEach(d => d.update([start, ...prevState, end]));
     prevState.forEach((d, i) => d.props = {...dots[i].props});
 
-    const middle = Math.ceil( dots.length / 2 );
-    const tempDot = dots[middle];
     floated.forEach( s => {
-      s.props.x = tempDot.x;
-      s.props.y = tempDot.y;
-      s.props.gradient = this.gradientOf(tempDot.bezier.cp1, tempDot.bezier.cp2); 
+      const idx = this.dotIndexOf( s.x );
+      if( idx < 0 || idx >= dots.length ) return;
+
+      const next = dots[idx];
+      const prev = dots[idx-1] || start;
+      const {cp1, cp2} = next.bezier;
+      const t = (s.x - prev.x) / dotDistance;
+      const gradient = this.gradientOfBezier(t, prev, next, cp1, cp2);
+      s.props.y = this.bezierCurveFormula(t, prev, next, cp1, cp2).y;
+      s.props.rotation = Math.atan( gradient );
     });
+  }
+
+  dotIndexOf( x ) {
+    const { start, end, dotDistance } = this.props;
+    if( x < start.x || x > end.x ) return -1;
+
+    return Math.floor( (x - start.x) / dotDistance );
   }
 
   collision( shapes ) {
     const { start, end, dots, dotDistance } = this.props;
     for( const s of shapes ) {
-      if( s.x < start.x || s.x > end.x ) continue;
       if( s === this ) continue;
 
-      const idx = Math.floor( (s.x - start.x) / dotDistance );
+      const idx = this.dotIndexOf( s.x );
       if( idx >= dots.length || idx < 0 ) continue;
 
       const prev = dots[idx-1] || start;
@@ -262,7 +294,11 @@ class Line extends Shape {
   }
 
   conflict( shape ) { return false; }
-  floating( shape ) { this.props.floated.push( shape ); }
+  floating( shape, xPosition ) {
+    const { start, end } = this.props;
+    shape.x = start.x + (end.x - start.x) * xPosition;
+    this.props.floated.push( shape ); 
+  }
 }
 
 class SubLine extends Line {
