@@ -50,8 +50,7 @@ const cursor = new (class extends Dot {
 const duck = new (class extends Shape {
   constructor() { 
     super(); 
-    const img = new Image();
-    img.src = '../duck.png';
+    const img = document.getElementById('duck');
     this.props = { img }; 
   }
   draw( context ) {
