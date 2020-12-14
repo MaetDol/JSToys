@@ -37,17 +37,16 @@ class TaskQueue {
   }
 
   loop() {
-    if( !this.queue.length ) {
-      this.running = false;
-      return;
-    }
-
     const task = this.queue.shift();
     this.last = {
       task,
       start: new Date(),
       id: setTimeout(() => {
         task.do();
+        if( !this.queue.length ) {
+          this.running = false;
+          return;
+        }
         this.loop();
       }, task.delay )
     };
