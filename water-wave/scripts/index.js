@@ -51,7 +51,7 @@ const duck = new (class extends Shape {
   constructor() { 
     super(); 
     const img = new Image();
-    img.src = '/duck.png';
+    img.src = '../duck.png';
     this.props = { img }; 
   }
   draw( context ) {
