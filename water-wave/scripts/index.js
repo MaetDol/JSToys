@@ -86,12 +86,55 @@ const waveText = new (class extends Shape {
   collision() {}
 })();
 
+const bubble = new class {
+  constructor({ start, end, bottom }) {
+    this.group = [];
+    this.queue = new TaskQueue();
+    this.start = start;
+    this.end = end;
+    this.distance = end - start;
+    this.bottom = bottom;
+    this.range = 100;
+
+    this.bubbling();
+    this.queue.consume();
+  }
+
+  filtering() {
+    const group = this.group;
+    for( let i=group.length; i >= 0; i-- ) {
+      const bubble = group[i];
+      if( bubble.y < 0 ) group.splice( i, 1 );
+    }
+  }
+
+  bubbling() {
+    const counts = Math.ceil( Math.random() * 6 ) + 2;
+    const centerX = this.start + Math.random() * this.distance;
+    for( let i=0; i < counts; i++ ) {
+      const r = 10 * Math.random() + 4;
+      const x = centerX + Math.random() * this.range - this.range/2;
+      const y = this.bottom + Math.random() * this.range * (20/r);
+      const alpha = Math.ceil( Math.random() * (255*0.6) + (255*0.2) );
+      this.group.push( new Bubble({
+        x, y, r,
+        color: '#FFFFFF' + alpha.toString(16),
+      }));
+    }
+    this.queue.add( new Task({
+      job: () => this.bubbling(),
+      delay: 2000 + 500 * Math.random()
+    }));
+  }
+}({ start: line.props.start.x, end: line.props.end.x, bottom: canvas.height });
+
 const renderer = new Renderer( 
   canvas.width, canvas.height, ctx, 
   [
     [waveText],
     [sub1, sub2],
     [line, cursor], 
+    bubble.group,
   ], 
 );
 renderer.render();
