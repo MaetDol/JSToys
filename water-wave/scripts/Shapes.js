@@ -65,6 +65,16 @@ class Dot extends Shape {
 
   update() {}
   collision( shapes ) {}
+
+  conflictWithDot( dot ) {
+    const {x, y, r} = this.props;
+    const distance = Math.sqrt((dot.x - x)**2 + (dot.y - y)**2);
+    return {
+      point: dot,
+      distance,
+      conflict: distance <= r + dot.r,
+    };
+  }
 }
 
 class DotOfLine extends Dot {    
@@ -360,5 +370,17 @@ class Bubble extends Dot {
       dir: Math.random() < 0.5 ? -1 : 1,
       dist, vec,
     };
+  }
+
+  collision( shapes ) {
+    shapes.forEach( s => {
+      if( s === this ) return;
+
+      if( s instanceof Dot ) {
+        const info = s.conflictWithDot( this );
+        if( !info.conflict ) return;
+        this.props.x += (this.r + s.r) - info.distance;
+      }
+    });
   }
 }
