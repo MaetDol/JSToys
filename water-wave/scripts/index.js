@@ -101,13 +101,14 @@ const bubble = new class {
 
   filtering() {
     const group = this.group;
-    for( let i=group.length; i >= 0; i-- ) {
+    for( let i=group.length-1; i >= 0; i-- ) {
       const bubble = group[i];
       if( bubble.y < 0 ) group.splice( i, 1 );
     }
   }
 
   bubbling() {
+    this.filtering();
     const counts = Math.ceil( Math.random() * 6 ) + 2;
     const centerX = this.start + Math.random() * this.distance;
     for( let i=0; i < counts; i++ ) {
