@@ -1,6 +1,6 @@
-import Shape, { Line, SubLine, Dot, Bubble, } from './Shapes.js';
-import TaskQueue, { Task } from './TaskQueue.js';
-import Renderer from './Renderer.js';
+import { Shape, Line, SubLine, Dot, Bubble, } from './Shapes/all.mjs';
+import TaskQueue, { Task } from './TaskQueue.mjs';
+import Renderer from './Renderer.mjs';
 
 const canvas = document.querySelector('canvas');
 canvas.width = window.innerWidth;
