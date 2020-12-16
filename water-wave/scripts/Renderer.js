@@ -24,3 +24,5 @@ class Renderer {
     requestAnimationFrame( _=> this.render() );
   }
 }
+
+export default Renderer;

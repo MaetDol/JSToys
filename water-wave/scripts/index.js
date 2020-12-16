@@ -1,3 +1,7 @@
+import Shape, { Line, SubLine, Dot, Bubble, } from './Shapes.js';
+import TaskQueue, { Task } from './TaskQueue.js';
+import Renderer from './Renderer.js';
+
 const canvas = document.querySelector('canvas');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;

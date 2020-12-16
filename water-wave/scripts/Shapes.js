@@ -384,3 +384,13 @@ class Bubble extends Dot {
     });
   }
 }
+
+
+export default Shape;
+export {
+  Dot,
+  DotOfLine,
+  Line,
+  SubLine,
+  Bubble,
+};

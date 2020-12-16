@@ -73,3 +73,6 @@ class TaskQueue {
     this.queue = [];
   }
 }
+
+export default TaskQueue;
+export {Task};
