@@ -1,7 +1,8 @@
 import Box from './Ascii/Box.mjs';
-import CharacterMatrix from '';
+import CharacterMetrics from './utils/CharacterMetrics.mjs';
 
-const characterMatrix = new CharacterMatrix('Consolas');
+const characterMetrics = new CharacterMetrics('Consolas');
+console.log( characterMetrics.getHeight() );
 
 const asciiBox = new Box({w:35, h:5});
 const editor = document.getElementById('editor').children[0];

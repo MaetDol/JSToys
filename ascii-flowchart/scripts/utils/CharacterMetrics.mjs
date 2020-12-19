@@ -13,4 +13,12 @@ export default class CharacterMetrics {
   getMetrics( str='A' ) {
     return this.ctx.measureText(str);
   }
+
+  getHeight( str='A' ) {
+    const {
+      fontBoundingBoxAscent: ascent,
+      fontBoundingBoxDescent: descent,
+    } = this.metrics;
+    return ascent + descent;
+  }
 };
