@@ -11,6 +11,7 @@ export default class CharacterMetrics {
   }
   
   getMetrics( str='A' ) {
+    this.ctx.font = `16px ${this.fontFamily}`;
     return this.ctx.measureText(str);
   }
 
