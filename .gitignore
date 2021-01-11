@@ -1,4 +1,5 @@
 *.swp
+ignoreme
 
 node_modules/
 build/
