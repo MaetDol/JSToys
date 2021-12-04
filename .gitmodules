@@ -1,0 +1,3 @@
+[submodule "make-to-pixel/k-means-js"]
+	path = make-to-pixel/src/js/k-means-js
+	url = https://github.com/MaetDol/k-means-js.git
