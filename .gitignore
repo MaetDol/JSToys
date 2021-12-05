@@ -3,3 +3,4 @@ ignoreme
 
 node_modules/
 build/
+.vs/
