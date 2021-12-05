@@ -10,7 +10,7 @@ export function loadImage( event, callback ) {
 
 	const image = new Image();
 	image.onload = function(...args) {
-		callback(...args);
+		if( callback ) callback(...args);
 		URL.revokeObjectURL( image.src );
 	};
 	image.src = URL.createObjectURL( file );
