@@ -1,5 +1,4 @@
-export function loadImage( event, callback ) {
-	const file = event?.target?.files?.[0];
+export function loadImageFromFile( file, callback ) {
 	if( !file ) return;
 	if( !/^image/.test(file.type) ) {
 		throw new Error(
