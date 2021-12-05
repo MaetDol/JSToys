@@ -1,11 +1,10 @@
 import Kmeans from './k-means-js/index.js';
-import { loadImageFromFile } from './image.js';
+import { fitImageToFrame, loadImageFromFile } from './image.js';
 
 window.addEventListener( 'DOMContentLoaded', initLoad );
 
 var imgPixels,
     img   = new Image(),
-    info  = Symbol('info'),
     shape = 'circle',
     gap   = 1,
     grid  = {},
@@ -83,29 +82,10 @@ function fileChangeHandler( file ) {
       resetGrid( ['pixels'] )
       drawPixelImage();
     });
-    img[info] = {};
   } catch(e) {
     console.log(e)
     alert('이미지를 다시 선택해 주세요');
     return;
-  }
-}
-
-function fitImageToCanvas() {
-  // 이미지가 캔버스에 딱맞는 사이즈를 계산한다(contain)
-  if( imgIsLoaded() ) {
-    let w, h
-    if( img.width > img.height ) {
-      w = canvas.width
-      h = img.height / img.width * canvas.width
-    } else {
-      w = img.width / img.height * canvas.height
-      h = canvas.height
-    }
-    // 계산한 사이즈를 할당한 후 픽셀데이터를 얻는다
-    img[info].width  = Math.floor( w )
-    img[info].height = Math.floor( h )
-    getImagePixels()
   }
 }
 
@@ -118,9 +98,9 @@ function generateGrid() {
     
     // 한 셀에 들어가는 픽셀 수 + 공백 너비
     let cellSize       = grid.size + gap,
-        imgRowPixelLen = img[info].width * 4
-    grid.rowLen = Math.floor( img[info].height / cellSize )
-    grid.colLen = Math.floor( img[info].width / cellSize )
+        imgRowPixelLen = img.width * 4
+    grid.rowLen = Math.floor( img.height / cellSize )
+    grid.colLen = Math.floor( img.width / cellSize )
     // 그리드를 캔버스 가운데로 정렬한다
     grid.startX = Math.floor( (canvas.width  - grid.colLen*cellSize + gap) / 2)
     grid.startY = Math.floor( (canvas.height - grid.rowLen*cellSize + gap) / 2)
@@ -199,7 +179,8 @@ function generateGrid() {
 
 // 캔버스에 도트를 찍는다
 function drawPixelImage() {
-  fitImageToCanvas()
+  fitImageToFrame(img, canvas.width, canvas.height);
+  getImagePixels();
   generateGrid()
   context.clearRect( 0, 0, canvas.width, canvas.height )
   if( !imgIsLoaded() ) {
@@ -239,12 +220,11 @@ function getImagePixels() {
   preview.context.clearRect( 0, 0, canvas.width, canvas.height )
   preview.context.drawImage( 
     img, 
-    0, 0, img.width,       img.height,
-    0, 0, img[info].width, img[info].height )
+    0, 0, img.width, img.height )
 
   imgPixels = 
     preview.context
-    .getImageData( 0, 0, img[info].width, img[info].height )
+    .getImageData( 0, 0, img.width, img.height )
     .data
 }
 
