@@ -1,4 +1,5 @@
 import Kmeans from './k-means-js/index.js';
+import { loadImageFromFile } from './image.js';
 
 window.addEventListener( 'DOMContentLoaded', initLoad );
 
@@ -38,8 +39,13 @@ function initLoad() {
   resetGrid()
   setToCircle()
 
-  // dialog로 파일을 받았을 때 이벤트 처리
-  fileInput.addEventListener('change', getSource )
+  fileInput.addEventListener('change', e => 
+    fileChangeHandler( e.target.files[0] )
+  );
+  fileWrap.addEventListener('drop', e => 
+    fileChangeHandler( e.dataTransfer.files[0] )
+  );
+
   // drag and drop 이벤트를 위한 초기화작업. 다른 drag이벤트들의
   // preventDefault와 stopPropagation을 진행해야 하는데
   // 왜인지 모르겠다 검색 필요
@@ -48,10 +54,6 @@ function initLoad() {
       e.preventDefault()
       e.stopPropagation()
     })
-  })
-  fileWrap.addEventListener('drop', e => {
-    let dt = e.dataTransfer
-    getSource( {target: { files: dt.files }} )
   })
 }
 
@@ -75,39 +77,18 @@ function resetGrid( list=['size', 'pixels'] ) {
   context.clearRect( 0, 0, canvas.width, canvas.height )
 }
 
-function getSource(e) {
-  const files = e?.target?.files
-  img = new Image()
-  img[info] = {}
-
-  resetGrid( ['pixels'] )
-  // input 태그에 파일이 들어있는지 확인
-  if( !( files && files[0] ) ) {
-    return false
+function fileChangeHandler( file ) {
+  try {
+    img = loadImageFromFile( file, () => {
+      resetGrid( ['pixels'] )
+      drawPixelImage();
+    });
+    img[info] = {};
+  } catch(e) {
+    console.log(e)
+    alert('이미지를 다시 선택해 주세요');
+    return;
   }
-
-  // File 인터페이스형식의 데이터를 DataURLs 형식으로 변환시킨다
-  var reader = new FileReader()
-  reader.onload = function (e) {
-    img.src = e.target.result
-  }
-  reader.readAsDataURL( files[0] )
-
-  // 로딩 기다리기. count 말고 readyState는 어떤지?
-  var count = 0
-  var retry = setInterval( function() {
-    if( count++ > 10 ) {
-      clearInterval( retry )
-      alert( '이미지를 다시 선택해 주세요' )
-      return
-    }
-    if( !imgIsLoaded() ) {
-      return
-    }
-
-    clearInterval( retry )
-    drawPixelImage()
-  }, 10 )
 }
 
 function fitImageToCanvas() {
