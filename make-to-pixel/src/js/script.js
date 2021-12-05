@@ -1,3 +1,4 @@
+import Kmeans from './k-means-js/index.js';
 
 window.addEventListener( 'DOMContentLoaded', initLoad );
 
@@ -54,6 +55,7 @@ function initLoad() {
   })
 }
 
+// moved
 function resizeCanvas() {
   let boundingRect = canvas.getBoundingClientRect()
   canvas.width  = boundingRect.width
@@ -130,6 +132,9 @@ function fitImageToCanvas() {
 function generateGrid() {
 
   if( imgIsLoaded() ) {
+    
+    const kmeans = new Kmeans({ k:3, dimension:3 });
+    
     // 한 셀에 들어가는 픽셀 수 + 공백 너비
     let cellSize       = grid.size + gap,
         imgRowPixelLen = img[info].width * 4
@@ -141,12 +146,11 @@ function generateGrid() {
 
     for( let ri=0, gi=0; ri < grid.rowLen; ri++ ) {  // row
       for( let ci=0; ci < grid.colLen; ci++ ) { // col
-        let r, g, b, a,
             // [r,g,b,a, r,g,b,a, r,g,b,a, ...]
             // 곱하기 4는 r, g, b, a 값이 반복되며 배열을 이루고 있기 때문에
             // 각 픽셀을 계산하기 위해 4칸씩 뛴다.
             // 각 셀의 맨 첫번째( 왼쪽 위 )픽셀 위치
-            lt = ci*cellSize*4 + ri*cellSize*imgRowPixelLen,
+        let lt = ci*cellSize*4 + ri*cellSize*imgRowPixelLen,
             // Right top
             rt = lt + (grid.size-1)*4
         // 오른쪽 위 좌표가 이미지 밖일경우 재조정한다
@@ -160,6 +164,31 @@ function generateGrid() {
         // Left bottom
         let lb = rb - (rt-lt)
 
+        const pixels = [];
+        for( let top=0; top < grid.size; top++ ) {
+          const row = imgRowPixelLen * top;
+          for( let left=0; left < rt - lt; left+=4 ) {
+            const start = lt + row + left
+            pixels.push([
+              imgPixels[start],
+              imgPixels[start+1],
+              imgPixels[start+2],
+            ])
+          }
+        }
+        kmeans.datas = pixels;
+        const [r, g, b] = kmeans
+          .fit()
+          .reduce((result, color, idx) => {
+            const scale = kmeans.classifications[idx].length;
+            return result.scale > scale
+              ? result
+              : {color, scale};
+          }, {scale: -1})
+          .color
+          .map( v => parseInt(v) );
+
+        /*
         // 네 모서리의 평균값을 해당 셀 색으로 지정한다
         r = Math.floor(( 
           imgPixels[lt]   + imgPixels[rt] + 
@@ -179,8 +208,9 @@ function generateGrid() {
         g = isNaN(g) ? 255 : g
         b = isNaN(b) ? 255 : b
         a = isNaN(a) ? 1   : a
+        */
         
-        grid.pixels[gi++] = {r, g, b, a}
+        grid.pixels[gi++] = {r, g, b, a: 255}
       }
     }
   }
