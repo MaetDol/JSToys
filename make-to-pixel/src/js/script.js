@@ -1,4 +1,5 @@
-window.addEventListener( 'load', initLoad );
+
+window.addEventListener( 'DOMContentLoaded', initLoad );
 
 var imgPixels,
     img   = new Image(),
@@ -12,16 +13,25 @@ var imgPixels,
     canvas,
     preview = {}
 
-function initLoad() {
-  const fileInput = document.getElementById('file')
-  const fileWrap  = document.querySelector('.input-file label')
-  canvas    = document.getElementById('canvas')
-  context   = canvas.getContext('2d')
-  sizeInput = document.getElementById('sizeRange')
-  gapInput  = document.getElementById('gapRange')
+function $(s) {
+  return document.querySelector(s);
+}
 
-  preview.canvas  = document.querySelector('.image-preview')
+function initLoad() {
+  const fileInput = $('#file')
+  const fileWrap  = $('.input-file label')
+  canvas    = $('#canvas')
+  context   = canvas.getContext('2d')
+  sizeInput = $('#sizeRange')
+  gapInput  = $('#gapRange')
+
+  preview.canvas  = $('.image-preview')
   preview.context = preview.canvas.getContext('2d')
+
+  sizeRange.addEventListener( 'change', updateSize );
+  gapInput.addEventListener('change', updateGap );
+  $('.radio-circle').addEventListener('change', setToCircle );
+  $('.radio-square').addEventListener('change', setToSquare );
 
   resizeCanvas()
   resetGrid()
@@ -53,13 +63,9 @@ function resizeCanvas() {
   preview.canvas.height = boundingRect.height
 }
 
-function init() {
-  drawPixelImage()
-}
-
 function resetGrid( list=['size', 'pixels'] ) {
-  for( var i in list ) {
-    switch( list[i] ) {
+  for( var item of list ) {
+    switch( item ) {
       case 'size'  : grid.size   = 8; break
       case 'pixels': grid.pixels = []
     }
