@@ -75,45 +75,32 @@ function fileChangeHandler( file ) {
 // 캔버스에 도트를 찍는다
 function drawPixelImage() {
   const cvs = new Canvas({ canvas: $('.image-preview') });
-  imgPixels = cvs.getPixels( img );
+  const fitedImage = fitImageToFrame( img, cvs.width, cvs.height );
   
   const gridd = new Grid({ width: grid.size, height: grid.size, gap });
-  gridd.calculateGridInfo({ canvas, image: img });
 
-  context.clearRect( 0, 0, canvas.width, canvas.height )
-  if( !imgIsLoaded() ) {
-    return;
-  }
+  const mainCvs = new Canvas({ canvas: $('#canvas') });
+  gridd.calculateGridInfo( 
+    fitedImage.width, fitedImage.height,
+    mainCvs.width, mainCvs.height 
+  );
+  const colors = gridd.getGridColors( 
+    fitedImage.width, 
+    fitedImage.height, 
+    cvs.getPixels( fitedImage )
+  );
 
-  // 그리기 시작하는 위치
-  let x = gridd.startX,
-      y = gridd.startY,
-      w = gridd.width,
-      i = 0,
-      cellSize = gridd.width + gridd.gap,
-      rad = w/2
+  mainCvs.drawCell({
+    x: gridd.startX,
+    y: gridd.startY,
+    dotSize: gridd.width,
+    gap: gridd.gap,
+    rows: gridd.rowCount,
+    columns: gridd.columnCount,
+    dots: colors,
+    shape: shape,
+  })
 
-  img.pixels = imgPixels;
-  const colors = gridd.getGridColors( img );
-
-  for( let r=0; r < gridd.rowCount; r++ ) {
-    for( let c=0; c < gridd.columnCount; c++ ) {
-      let color = colors[i++];
-      context.beginPath()
-      context.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`
-
-      if( shape == 'square' ) {
-        context.fillRect( x, y, w, w )
-      } else {
-        context.arc( x+w/2, y+w/2, rad, 0, Math.PI*2 )
-        context.fill()
-      }
-     
-      x += cellSize
-    }
-    x = gridd.startX
-    y += cellSize
-  }
 }
 
 function getImagePixels() {
@@ -146,14 +133,14 @@ function updateGap( event ) {
 }
 
 function setToSquare() {
-  shape = 'square'
+  shape = 'SQUARE'
   if( imgIsLoaded() ) {
     drawPixelImage()
   }
 }
 
 function setToCircle() {
-  shape = 'circle'
+  shape = 'CIRCLE'
   if( imgIsLoaded() ) {
     drawPixelImage()
   }
