@@ -8,9 +8,7 @@ var imgPixels,
     img   = new Image(),
     shape = 'circle',
     gap   = 1,
-    grid  = {},
-    sizeInput,
-    gapInput,
+    grid  = { size: 8 },
     context,
     canvas,
     preview = {}
@@ -20,29 +18,23 @@ function $(s) {
 }
 
 function initLoad() {
-  const fileInput = $('#file')
-  const fileWrap  = $('.input-file label')
   canvas    = $('#canvas')
   context   = canvas.getContext('2d')
-  sizeInput = $('#sizeRange')
-  gapInput  = $('#gapRange')
-
   preview.canvas  = $('.image-preview')
   preview.context = preview.canvas.getContext('2d')
 
-  sizeRange.addEventListener( 'change', updateSize );
-  gapInput.addEventListener('change', updateGap );
+  $('#sizeRange').addEventListener( 'change', updateSize );
+  $('#gapRange').addEventListener('change', updateGap );
   $('.radio-circle').addEventListener('change', setToCircle );
   $('.radio-square').addEventListener('change', setToSquare );
 
   resizeCanvas()
-  resetGrid()
   setToCircle()
 
-  fileInput.addEventListener('change', e => 
+  $('#file').addEventListener('change', e => 
     fileChangeHandler( e.target.files[0] )
   );
-  fileWrap.addEventListener('drop', e => 
+  $('.input-file label').addEventListener('drop', e => 
     fileChangeHandler( e.dataTransfer.files[0] )
   );
 
@@ -50,7 +42,7 @@ function initLoad() {
   // preventDefault와 stopPropagation을 진행해야 하는데
   // 왜인지 모르겠다 검색 필요
   ;(['dragenter', 'dragover', 'dragleave', 'drop']).forEach( e => {
-    fileWrap.addEventListener( e, e => {
+    $('.input-file label').addEventListener( e, e => {
       e.preventDefault()
       e.stopPropagation()
     })
@@ -67,20 +59,9 @@ function resizeCanvas() {
   preview.canvas.height = boundingRect.height
 }
 
-function resetGrid( list=['size', 'pixels'] ) {
-  for( var item of list ) {
-    switch( item ) {
-      case 'size'  : grid.size   = 8; break
-      case 'pixels': grid.pixels = []
-    }
-  }
-  context.clearRect( 0, 0, canvas.width, canvas.height )
-}
-
 function fileChangeHandler( file ) {
   try {
     img = loadImageFromFile( file, () => {
-      resetGrid( ['pixels'] )
       drawPixelImage();
     });
   } catch(e) {
@@ -147,18 +128,20 @@ function getImagePixels() {
     .data
 }
 
-function updateSize() {
-  resetGrid()
-  grid.size = Number( sizeInput.value )
+function updateSize( event ) {
+  grid.size = Number( event.target.value )
 
   if( imgIsLoaded() ) {
     drawPixelImage()
   }
 }
 
-function updateGap() {
-  gap = Number( gapInput.value )
-  updateSize()
+function updateGap( event ) {
+  gap = Number( event.target.value )
+
+  if( imgIsLoaded() ) {
+    drawPixelImage()
+  }
 }
 
 function setToSquare() {
