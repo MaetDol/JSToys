@@ -11,37 +11,25 @@ export default class Grid {
 		this.gap = gap;
 	}
 
-	calculateCellInfo( image ) {
+	calculateGridInfo( imageWidth, imageHeight, canvasWidth, canvasHeight ) {
 		const CALCULATED_CELL_WIDTH = this.width + this.gap;
 		const CALCULATED_CELL_HEIGHT = this.height + this.gap;
 
-		this.columnCount = Math.floor( image.width / CALCULATED_CELL_WIDTH );
-		this.rowCount = Math.floor( image.height / CALCULATED_CELL_HEIGHT );
-	}
-
-	calculateStartPosition( canvas ) {
-		const CALCULATED_CELL_WIDTH = this.width + this.gap;
-		const CALCULATED_CELL_HEIGHT = this.height + this.gap;
+		this.columnCount = Math.floor( imageWidth / CALCULATED_CELL_WIDTH );
+		this.rowCount = Math.floor( imageHeight / CALCULATED_CELL_HEIGHT );
 
     this.startX = Math.floor( 
-			(canvas.width - this.columnCount * CALCULATED_CELL_WIDTH + this.gap) / 2
+			(canvasWidth - this.columnCount * CALCULATED_CELL_WIDTH + this.gap) / 2
 		);
     this.startY = Math.floor( 
-			(canvas.height - this.rowCount * CALCULATED_CELL_HEIGHT + this.gap) / 2
+			(canvasHeight - this.rowCount * CALCULATED_CELL_HEIGHT + this.gap) / 2
 		);
 	}
 
-	calculateGridInfo({ canvas, image }) {
-		this.calculateCellInfo( image );
-		this.calculateStartPosition( canvas );
-	}
-
-	getGridColors( image ) {
-
-		this.calculateCellInfo( image );
+	getGridColors( imageWidth, imageHeight, pixels ) {
 
 		const kmeans = new Kmeans({ k:3, dimension:3 });
-		const IMAGE_PIXEL_PER_ROW = image.width * RGBA;
+		const IMAGE_PIXEL_PER_ROW = imageWidth * RGBA;
 		const CALCULATED_CELL_WIDTH = this.width + this.gap;
 		const CALCULATED_CELL_HEIGHT = this.height + this.gap;
 		const cells = [];
@@ -59,27 +47,27 @@ export default class Grid {
 					: calculatedRightTop;
 
 				const calculatedRightBottom = rightTop + (this.height-1) * IMAGE_PIXEL_PER_ROW;
-				const rightBottom = calculatedRightBottom > image.height * IMAGE_PIXEL_PER_ROW
-					? image.height * IMAGE_PIXEL_PER_ROW - RGBA
+				const rightBottom = calculatedRightBottom > imageHeight * IMAGE_PIXEL_PER_ROW
+					? imageHeight * IMAGE_PIXEL_PER_ROW - RGBA
 					: calculatedRightBottom;
 
 				const cellWidth = rightTop - leftTop;
 				const leftBottom = rightBottom - cellWidth;
 
-				const pixels = [];
+				const cellPixels = [];
 				for( let top=leftTop; top < leftBottom; top+=IMAGE_PIXEL_PER_ROW ) {
 					for( let left=0; left < cellWidth; left+=RGBA ) {
 						const start = top + left;
-						pixels.push([
-							image.pixels[start],
-							image.pixels[start+1],
-							image.pixels[start+2],
+						cellPixels.push([
+							pixels[start],
+							pixels[start+1],
+							pixels[start+2],
 						]);
 					}
 				}
 
 				const [r, g, b] = kmeans
-					.fit({ datas: pixels })
+					.fit({ datas: cellPixels })
 					.reduce((largestCluster, cluster, i) => {
 						const scale = kmeans.classifications[i].length;
 						return largestCluster.scale > scale
@@ -93,7 +81,6 @@ export default class Grid {
 			}
 		}
 
-		this.pixels = cells;
 		return cells;
 	}
 
