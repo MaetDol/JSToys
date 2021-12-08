@@ -1,6 +1,7 @@
 import Kmeans from './k-means-js/index.js';
 import { fitImageToFrame, loadImageFromFile } from './image.js';
 import Grid from './grid.js';
+import Canvas from './canvas.js';
 
 window.addEventListener( 'DOMContentLoaded', initLoad );
 
@@ -73,8 +74,8 @@ function fileChangeHandler( file ) {
 
 // 캔버스에 도트를 찍는다
 function drawPixelImage() {
-  fitImageToFrame(img, canvas.width, canvas.height);
-  getImagePixels();
+  const cvs = new Canvas({ canvas: $('.image-preview') });
+  imgPixels = cvs.getPixels( img );
   
   const gridd = new Grid({ width: grid.size, height: grid.size, gap });
   gridd.calculateGridInfo({ canvas, image: img });
