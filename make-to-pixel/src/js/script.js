@@ -1,5 +1,6 @@
 import Kmeans from './k-means-js/index.js';
 import { fitImageToFrame, loadImageFromFile } from './image.js';
+import Grid from './grid.js';
 
 window.addEventListener( 'DOMContentLoaded', initLoad );
 
@@ -181,23 +182,30 @@ function generateGrid() {
 function drawPixelImage() {
   fitImageToFrame(img, canvas.width, canvas.height);
   getImagePixels();
+  
   generateGrid()
+  const gridd = new Grid({ width: grid.size, height: grid.size, gap });
+  gridd.calculateGridInfo({ canvas, image: img });
+
   context.clearRect( 0, 0, canvas.width, canvas.height )
   if( !imgIsLoaded() ) {
     return;
   }
 
   // 그리기 시작하는 위치
-  let x = grid.startX,
-      y = grid.startY,
-      w = grid.size,
+  let x = gridd.startX,
+      y = gridd.startY,
+      w = gridd.width,
       i = 0,
-      cellSize = grid.size + gap,
+      cellSize = gridd.width + gridd.gap,
       rad = w/2
 
-  for( let r=0; r < grid.rowLen; r++ ) {
-    for( let c=0; c < grid.colLen; c++ ) {
-      let color = grid.pixels[i++]
+  img.pixels = imgPixels;
+  const colors = gridd.getGridColors( img );
+
+  for( let r=0; r < gridd.rowCount; r++ ) {
+    for( let c=0; c < gridd.columnCount; c++ ) {
+      let color = colors[i++];
       context.beginPath()
       context.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`
 
@@ -210,7 +218,7 @@ function drawPixelImage() {
      
       x += cellSize
     }
-    x = grid.startX
+    x = gridd.startX
     y += cellSize
   }
 }
