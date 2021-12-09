@@ -1,18 +1,8 @@
-import Kmeans from './k-means-js/index.js';
-import { fitImageToFrame, loadImageFromFile } from './image.js';
-import Grid from './grid.js';
 import Canvas from './canvas.js';
+import Grid from './grid.js';
+import { fitImageToFrame, loadImageFromFile } from './image.js';
 
 window.addEventListener( 'DOMContentLoaded', initLoad );
-
-var imgPixels,
-    img   = new Image(),
-    shape = 'circle',
-    gap   = 1,
-    grid  = { size: 8 },
-    context,
-    canvas,
-    preview = {}
 
 function $(s) {
   return document.querySelector(s);
@@ -60,40 +50,23 @@ function initLoad() {
     });
   }
 
-  $('#file').addEventListener('change', e => 
-    fileChangeHandler( e.target.files[0], onImageLoad )
-  );
-  $('.input-file label').addEventListener('drop', e => {
-    fileChangeHandler( e.dataTransfer.files[0], onImageLoad )
-    e.stopPropagation();
-    e.preventDefault();
-  });
-
   $('#sizeRange').addEventListener( 'change', setSize );
   $('#gapRange').addEventListener('change', setGap );
   $('.radio-circle').addEventListener('change', setShape );
   $('.radio-square').addEventListener('change', setShape );
 
-  // drag and drop 이벤트를 위한 초기화작업. 다른 drag이벤트들의
-  // preventDefault와 stopPropagation을 진행해야 하는데
-  // 왜인지 모르겠다 검색 필요
-  ;(['dragenter', 'dragover', 'dragleave', 'drop']).forEach( e => {
-    $('.input-file label').addEventListener( e, e => {
+  $('#file').addEventListener('change', e => 
+    fileChangeHandler( e.target.files[0], onImageLoad )
+  );
+  window.addEventListener('drop', e => {
+    fileChangeHandler( e.dataTransfer.files[0], onImageLoad )
+  });
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach( e => {
+    window.addEventListener( e, e => {
       e.preventDefault()
       e.stopPropagation()
-    })
-  })
-
-}
-
-// moved
-function resizeCanvas() {
-  let boundingRect = canvas.getBoundingClientRect()
-  canvas.width  = boundingRect.width
-  canvas.height = boundingRect.height
-
-  preview.canvas.width  = boundingRect.width
-  preview.canvas.height = boundingRect.height
+    });
+  });
 }
 
 function fileChangeHandler( file, callback ) {
@@ -113,7 +86,7 @@ function drawPixelImage({ previewCanvas, paletteCanvas, image, grid, shape }) {
     previewCanvas.width, 
     previewCanvas.height
   );
-  
+
   const canvasSize = fitImageToFrame(
     image,
     paletteCanvas.width,
@@ -140,39 +113,4 @@ function drawPixelImage({ previewCanvas, paletteCanvas, image, grid, shape }) {
     dots: colors,
     shape: shape,
   });
-}
-
-function updateSize( event ) {
-  grid.size = Number( event.target.value )
-
-  if( imgIsLoaded() ) {
-    drawPixelImage()
-  }
-}
-
-function updateGap( event ) {
-  gap = Number( event.target.value )
-
-  if( imgIsLoaded() ) {
-    drawPixelImage()
-  }
-}
-
-function setToSquare() {
-  shape = 'SQUARE'
-  if( imgIsLoaded() ) {
-    drawPixelImage()
-  }
-}
-
-function setToCircle() {
-  shape = 'CIRCLE'
-  if( imgIsLoaded() ) {
-    drawPixelImage()
-  }
-}
-
-function imgIsLoaded() {
-  return img != undefined 
-    && ( img.width > 0 && img.height > 0 )
 }
