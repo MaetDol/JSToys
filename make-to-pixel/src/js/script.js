@@ -19,25 +19,60 @@ function $(s) {
 }
 
 function initLoad() {
-  canvas    = $('#canvas')
-  context   = canvas.getContext('2d')
-  preview.canvas  = $('.image-preview')
-  preview.context = preview.canvas.getContext('2d')
+  const previewCanvas = new Canvas({ canvas: $('.image-preview') });
+  const paletteCanvas = new Canvas({ canvas: $('#canvas') });
 
-  $('#sizeRange').addEventListener( 'change', updateSize );
-  $('#gapRange').addEventListener('change', updateGap );
-  $('.radio-circle').addEventListener('change', setToCircle );
-  $('.radio-square').addEventListener('change', setToSquare );
+  const grid = new Grid({
+    width: $('#sizeRange').valueAsNumber,
+    height: $('#sizeRange').valueAsNumber,
+    gap: $('#gapRange').valueAsNumber,
+  });
+  const setGap = event => {
+    grid.gap = event.target.valueAsNumber;
+    render();
+  };
+  const setSize = event => {
+    grid.height = grid.width = $('#sizeRange').valueAsNumber;
+    render();
+  }
 
-  resizeCanvas()
-  setToCircle()
+  let shape = $('[name="shape"]:checked').value;
+  const setShape = event => {
+    shape = event.target.checked
+      ? event.target.value
+      : shape;
+    render();
+  };
+  
+  let image = null;
+  const onImageLoad = newImage => {
+    image = newImage;
+    render();
+  };
+
+  const render = () => {
+    drawPixelImage({
+      previewCanvas,
+      paletteCanvas,
+      image,
+      grid,
+      shape,
+    });
+  }
 
   $('#file').addEventListener('change', e => 
-    fileChangeHandler( e.target.files[0] )
+    fileChangeHandler( e.target.files[0], onImageLoad )
   );
-  $('.input-file label').addEventListener('drop', e => 
-    fileChangeHandler( e.dataTransfer.files[0] )
-  );
+  $('.input-file label').addEventListener('drop', e => {
+    fileChangeHandler( e.dataTransfer.files[0], onImageLoad )
+    e.stopPropagation();
+    e.preventDefault();
+  });
+
+  $('#sizeRange').addEventListener( 'change', setSize );
+  $('#gapRange').addEventListener('change', setGap );
+  $('.radio-circle').addEventListener('change', setShape );
+  $('.radio-square').addEventListener('change', setShape );
 
   // drag and drop 이벤트를 위한 초기화작업. 다른 drag이벤트들의
   // preventDefault와 stopPropagation을 진행해야 하는데
@@ -48,6 +83,7 @@ function initLoad() {
       e.stopPropagation()
     })
   })
+
 }
 
 // moved
@@ -60,11 +96,9 @@ function resizeCanvas() {
   preview.canvas.height = boundingRect.height
 }
 
-function fileChangeHandler( file ) {
+function fileChangeHandler( file, callback ) {
   try {
-    img = loadImageFromFile( file, () => {
-      drawPixelImage();
-    });
+    loadImageFromFile( file, callback );
   } catch(e) {
     console.log(e)
     alert('이미지를 다시 선택해 주세요');
@@ -73,47 +107,39 @@ function fileChangeHandler( file ) {
 }
 
 // 캔버스에 도트를 찍는다
-function drawPixelImage() {
-  const cvs = new Canvas({ canvas: $('.image-preview') });
-  const fitedImage = fitImageToFrame( img, cvs.width, cvs.height );
+function drawPixelImage({ previewCanvas, paletteCanvas, image, grid, shape }) {
+  const previewSize = fitImageToFrame(
+    image, 
+    previewCanvas.width, 
+    previewCanvas.height
+  );
   
-  const gridd = new Grid({ width: grid.size, height: grid.size, gap });
-
-  const mainCvs = new Canvas({ canvas: $('#canvas') });
-  gridd.calculateGridInfo( 
-    fitedImage.width, fitedImage.height,
-    mainCvs.width, mainCvs.height 
-  );
-  const colors = gridd.getGridColors( 
-    fitedImage.width, 
-    fitedImage.height, 
-    cvs.getPixels( fitedImage )
+  const canvasSize = fitImageToFrame(
+    image,
+    paletteCanvas.width,
+    paletteCanvas.height
   );
 
-  mainCvs.drawCell({
-    x: gridd.startX,
-    y: gridd.startY,
-    dotSize: gridd.width,
-    gap: gridd.gap,
-    rows: gridd.rowCount,
-    columns: gridd.columnCount,
+  grid.calculateGridInfo( 
+    canvasSize.width, canvasSize.height,
+    paletteCanvas.width, paletteCanvas.height 
+  );
+  const colors = grid.getGridColors( 
+    previewSize.width, 
+    previewSize.height, 
+    previewCanvas.getPixels( image )
+  );
+
+  paletteCanvas.drawCell({
+    x: grid.startX,
+    y: grid.startY,
+    dotSize: grid.width,
+    gap: grid.gap,
+    rows: grid.rowCount,
+    columns: grid.columnCount,
     dots: colors,
     shape: shape,
-  })
-
-}
-
-function getImagePixels() {
-  // 이미지를 늘려서 그린다
-  preview.context.clearRect( 0, 0, canvas.width, canvas.height )
-  preview.context.drawImage( 
-    img, 
-    0, 0, img.width, img.height )
-
-  imgPixels = 
-    preview.context
-    .getImageData( 0, 0, img.width, img.height )
-    .data
+  });
 }
 
 function updateSize( event ) {
