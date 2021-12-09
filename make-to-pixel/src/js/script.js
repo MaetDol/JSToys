@@ -74,6 +74,11 @@ function initLoad() {
       e.stopPropagation();
     });
   });
+  document.addEventListener('paste', e => {
+    const file = e.clipboardData.files[0];
+    if( !file ) return;
+    fileChangeHandler( file, onImageLoad );
+  });
 }
 
 function fileChangeHandler( file, callback ) {
