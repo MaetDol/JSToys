@@ -22,7 +22,7 @@ function initLoad() {
     render();
   };
   const setSize = event => {
-    grid.height = grid.width = $('#sizeRange').valueAsNumber;
+    grid.height = grid.width = event.target.valueAsNumber;
     render();
   }
 
