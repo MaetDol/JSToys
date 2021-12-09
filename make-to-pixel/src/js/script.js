@@ -68,10 +68,10 @@ function initLoad() {
   window.addEventListener('drop', e => {
     fileChangeHandler( e.dataTransfer.files[0], onImageLoad )
   });
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach( e => {
+  ['dragover', 'drop'].forEach( e => {
     window.addEventListener( e, e => {
-      e.preventDefault()
-      e.stopPropagation()
+      e.preventDefault();
+      e.stopPropagation();
     });
   });
 }
