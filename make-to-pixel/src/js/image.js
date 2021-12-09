@@ -8,8 +8,8 @@ export function loadImageFromFile( file, callback ) {
 	}
 
 	const image = new Image();
-	image.onload = function(...args) {
-		if( callback ) callback(...args);
+	image.onload = function( ...args ) {
+		if( callback ) callback( image, ...args );
 		URL.revokeObjectURL( image.src );
 	};
 	image.src = URL.createObjectURL( file );
