@@ -8,11 +8,14 @@ export default class Canvas {
 		this.width = canvas.width;
 		this.height = canvas.height;
 		this.drawDotMethods = drawDotMethods;
+
+		this.resize();
 	}
 
-	resize(w, h) {
-		this.canvas.width = w;
-		this.cavnas.height = h;
+	resize() {
+		const { width, height } = this.canvas.getBoundingClientRect();
+		this.width = this.canvas.width = width;
+		this.height = this.canvas.height = height;
 	}
 
 	clear() {
