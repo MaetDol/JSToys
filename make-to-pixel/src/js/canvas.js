@@ -23,14 +23,16 @@ export default class Canvas {
 	}
 
 	getPixels( image ) {
-		const img = fitImageToFrame( image, this.canvas.width, this.canvas.height );
+		const { width, height } = 
+			fitImageToFrame( image, this.canvas.width, this.canvas.height );
+
 		this.clear();
 		this.context.drawImage(
-			img,
-			0, 0, img.width, img.height
+			image,
+			0, 0, width, height
 		);
 		return this.context
-			.getImageData( 0, 0, img.width, img.height )
+			.getImageData( 0, 0, width, height )
 			.data;
 	}
 
