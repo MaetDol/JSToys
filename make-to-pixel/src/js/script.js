@@ -17,12 +17,17 @@ function initLoad() {
     height: $('#sizeRange').valueAsNumber,
     gap: $('#gapRange').valueAsNumber,
   });
+  $('.gap p span').innerText = $('#gapRange').valueAsNumber;
+  $('.size p span').innerText = $('#sizeRange').valueAsNumber;
+
   const setGap = event => {
-    grid.gap = event.target.valueAsNumber;
+    $('.gap p span').innerText = 
+      grid.gap = event.target.valueAsNumber;
     render();
   };
   const setSize = event => {
-    grid.height = grid.width = event.target.valueAsNumber;
+    $('.size p span').innerText = 
+      grid.height = grid.width = event.target.valueAsNumber;
     render();
   }
 
