@@ -30,8 +30,8 @@ export default class Grid {
 
 		const kmeans = new Kmeans({ k:3, dimension:3 });
 		const IMAGE_PIXEL_PER_ROW = imageWidth * RGBA;
-		const CALCULATED_CELL_WIDTH = this.width + this.gap;
-		const CALCULATED_CELL_HEIGHT = this.height + this.gap;
+		const CALCULATED_CELL_WIDTH = Math.floor( imageWidth / this.columnCount );
+		const CALCULATED_CELL_HEIGHT = Math.floor( imageHeight / this.rowCount );
 		const cells = [];
 
 		for( let row_i=0; row_i < this.rowCount; row_i++) {
