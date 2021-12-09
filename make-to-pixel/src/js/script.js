@@ -41,6 +41,8 @@ function initLoad() {
   };
 
   const render = () => {
+    if( !image ) return;
+
     drawPixelImage({
       previewCanvas,
       paletteCanvas,
