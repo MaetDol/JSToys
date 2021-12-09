@@ -29,9 +29,6 @@ export function fitImageToFrame(image, frameWidth, frameHeight) {
 		? image.height / image.width * frameHeight
 		: frameHeight;
 
-	image.width = Math.floor( w );
-	image.height = Math.floor( h );
-
 	return {
 		width: Math.floor( w ), 
 		height: Math.floor( h )

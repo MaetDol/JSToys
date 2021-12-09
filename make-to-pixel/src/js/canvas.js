@@ -29,6 +29,7 @@ export default class Canvas {
 		this.clear();
 		this.context.drawImage(
 			image,
+			0, 0, image.width, image.height,
 			0, 0, width, height
 		);
 		return this.context
