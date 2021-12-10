@@ -76,6 +76,12 @@ function initLoad() {
     if( !file ) return;
     fileChangeHandler( file, onImageLoad );
   });
+
+  window.addEventListener('resize', debounce(() => {
+    previewCanvas.resize();
+    paletteCanvas.resize();
+    render();
+  }, 100));
 }
 
 function fileChangeHandler( file, callback ) {
