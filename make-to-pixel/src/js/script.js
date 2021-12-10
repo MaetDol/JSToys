@@ -1,12 +1,9 @@
 import Canvas from './canvas.js';
 import Grid from './grid.js';
 import { fitImageToFrame, loadImageFromFile } from './image.js';
+import { $, debounce } from './utils.js';
 
 window.addEventListener( 'DOMContentLoaded', initLoad );
-
-function $(s) {
-  return document.querySelector(s);
-}
 
 function initLoad() {
   const previewCanvas = new Canvas({ canvas: $('.image-preview') });
@@ -45,7 +42,7 @@ function initLoad() {
     render();
   };
 
-  const render = () => {
+  const render = debounce(() => {
     if( !image ) return;
 
     drawPixelImage({
@@ -55,7 +52,7 @@ function initLoad() {
       grid,
       shape,
     });
-  }
+  }, 200);
 
   $('#sizeRange').addEventListener( 'change', setSize );
   $('#gapRange').addEventListener('change', setGap );
