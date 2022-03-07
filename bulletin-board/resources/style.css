@@ -51,6 +51,7 @@ form button {
     list-style: none;
     position: absolute;
     min-height: 16px;
+    white-space: pre;
 }
 .note .content {
     user-select: none;
