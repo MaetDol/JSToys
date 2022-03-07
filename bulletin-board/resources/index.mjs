@@ -5,6 +5,7 @@ import { getElement, pickRandomColor } from "./utils.mjs";
 window.onload = () => {
     const DRAGGABLE_CLASS = 'draggable';
     const dragManager = new DragManager(document, DRAGGABLE_CLASS);
+    dragManager.onDragStart(setElementToForward);
 
     const noteList = getElement('ul');
     const noteManager = new NoteManager(noteList);
@@ -39,4 +40,9 @@ function getClassAppender(className) {
 function setRandomBackground(elem) {
     elem.style.backgroundColor = pickRandomColor();
     return elem;
+}
+
+function setElementToForward({ target, webEvent }) {
+    if(webEvent.target.tagName !== 'BUTTON')
+        target.parentElement.appendChild(target);
 }
