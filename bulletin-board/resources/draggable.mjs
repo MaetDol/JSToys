@@ -7,6 +7,10 @@ export default class DragManager {
     constructor(dragAreaElement, draggableClass='draggable') {
         this.draggableClass = draggableClass;
 
+        this.onDragStartHandlers = [];
+        this.onDragHandlers = [];
+        this.onDragEndHandlers = [];
+
         dragAreaElement.addEventListener(
             'mousedown', 
             this.startDragHandler.bind(this)
@@ -19,7 +23,19 @@ export default class DragManager {
             'mouseup', 
             this.endDragHandler.bind(this)
         );
-}
+    }
+
+    onDragStart(fn) {
+        this.onDragStartHandlers.push(fn);
+    }
+
+    onDrag(fn) {
+        this.onDragHandlers.push(fn);
+    }
+
+    onDragEnd(fn) {
+        this.onDragEndHandlers.push(fn);
+    }
 
     startDragHandler(event) {
         this.draggingElement = getTargetClassInParent(event.target, this.draggableClass);
@@ -30,6 +46,12 @@ export default class DragManager {
             x: event.clientX - clientRect.x,
             y: event.clientY - clientRect.y
         };
+
+        const startEvent = this.createEvent({
+            target: this.draggingElement, 
+            webEvent: event
+        });
+        this.runHandlers(this.onDragStartHandlers, startEvent);
     }
 
     dragHandler(event) {
@@ -39,10 +61,36 @@ export default class DragManager {
             event.clientX - this.distanceOfCursorAndElement.x + 'px';
         this.draggingElement.style.top = 
             event.clientY - this.distanceOfCursorAndElement.y + 'px';
+
+        const dragEvent = this.createEvent({
+            target: this.draggingElement, 
+            webEvent: event
+        });
+        this.runHandlers(this.onDragHandlers, dragEvent);
     }
 
     endDragHandler() {
+        const draggedElement = this.draggingElement;
         this.draggingElement = null;
         this.distanceOfCursorAndElement = {};
+
+        const endEvent = this.createEvent({target: draggedElement});
+        this.runHandlers(this.onDragEndHandlers, endEvent);
+    }
+
+    createEvent(properties) {
+        const event = properties;
+
+        event.isPrevented = false;
+        event.preventDefault = () => event.isPrevented = true;
+
+        return event;
+    }
+
+    runHandlers(handlers, event) {
+        for(const handler of handlers) {
+            if(event.isPrevented) break;
+            handler(event);
+        }
     }
 }
