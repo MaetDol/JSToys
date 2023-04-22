@@ -1,6 +1,6 @@
 import Renderer from './Renderer.mjs';
 import { Bubble, Dot, Line, Shape, SubLine } from './Shapes/all.mjs';
-import { SPEECH_SET } from './speech-set.mjs';
+import { LIFE_QUOTE_TYPE, SPEECH_SET } from './speech-set.mjs';
 import TaskQueue, { Task } from './TaskQueue.mjs';
 
 const canvas = document.querySelector('canvas');
@@ -152,15 +152,23 @@ const duck = new (class extends Shape {
   }
 
   quak() {
-    const speaking = this.#accessories.filter((s) => s.type === 'SPEECH');
+    const speaking = this.#accessories.filter(
+      (s) => s.accessoryType === 'SPEECH'
+    );
     if (speaking.length > 3) return;
+
+    const isTalkAboutLife = speaking.some(
+      (s) => s.textType === LIFE_QUOTE_TYPE
+    );
+    if (isTalkAboutLife) return;
 
     const additionalRotate = randomRange(degToRadian(-60), degToRadian(60));
     const text = new (class extends Shape {
-      type = 'SPEECH';
+      accessoryType = 'SPEECH';
       id = Date.now();
 
       text = '';
+      textType = null;
       soundUrl = null;
 
       color = '#494B4D';
@@ -175,7 +183,9 @@ const duck = new (class extends Shape {
         const speech =
           SPEECH_SET[Math.floor(randomRange(0, SPEECH_SET.length))];
         this.text = speech.text;
+        this.textType = speech.type;
         this.soundUrl = speech.soundUrl;
+
         this.status = 'FADE-IN';
 
         this.play();
@@ -193,15 +203,37 @@ const duck = new (class extends Shape {
         const { x, y, img, rotation } = duck.props;
 
         context.save();
-        context.font = '24px "Bebas Neue"';
+        const FONT_SIZE = 24;
+        const FONT =
+          this.textType === LIFE_QUOTE_TYPE
+            ? `bold ${FONT_SIZE}px Eulyoo1945`
+            : `${FONT_SIZE}px "Bebas Neue"`;
+        context.font = FONT;
+
         const col = this.color + this.opacity.toString(16).padStart(2, '0');
         context.fillStyle = col;
-        const textSize = context.measureText(this.text);
 
         context.translate(x, y);
-        context.rotate(rotation * 1.8 + additionalRotate);
+        const rotate =
+          this.textType === LIFE_QUOTE_TYPE
+            ? 0
+            : rotation * 1.8 + additionalRotate;
+        context.rotate(rotate);
         context.scale(this.scale, this.scale);
-        context.fillText(this.text, -textSize.width, -img.height - 24);
+
+        const texts = this.text.split('\n');
+        const LINE_HEIGHT = FONT_SIZE * 1.4;
+        let top = img.height + LINE_HEIGHT * texts.length;
+
+        texts.forEach((txt) => {
+          const textSize = context.measureText(txt);
+          const left =
+            this.textType === LIFE_QUOTE_TYPE ? 450 : textSize.width / 2;
+
+          context.fillText(txt, -left, -top);
+          top -= LINE_HEIGHT;
+        });
+
         context.restore();
       }
       update() {
