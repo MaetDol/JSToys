@@ -9,6 +9,9 @@ const WaveSet = {
   TALK: `${WAV}/duck-talk.wav`,
 };
 
+// 미리 로딩해놓기 위한 코드
+Object.values(WaveSet).forEach((url) => new Audio(url));
+
 const CHICK_EMOJI = [
   {
     text: `🐤`,
