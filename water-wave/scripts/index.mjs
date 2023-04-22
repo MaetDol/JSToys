@@ -194,7 +194,6 @@ const duck = new (class extends Shape {
       play() {
         if (!this.soundUrl) return;
 
-        console.log(this.soundUrl);
         const audio = new Audio(this.soundUrl);
         audio.play();
       }
