@@ -222,6 +222,8 @@ class Line extends Shape {
       const gradient = this.gradientOfBezier(t, prev, next, cp1, cp2);
       s.props.y = this.bezierCurveFormula(t, prev, next, cp1, cp2).y;
       s.props.rotation = Math.atan(gradient);
+
+      s.update();
     });
   }
 

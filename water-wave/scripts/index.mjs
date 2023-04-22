@@ -95,6 +95,8 @@ const cursor = new (class extends Dot {
 })({ id: -3, x: -50, y: -50, r: 20, color: '#00000088' });
 
 const duck = new (class extends Shape {
+  #accessories = [];
+
   constructor() {
     super();
     const img = document.getElementById('duck');
@@ -116,6 +118,8 @@ const duck = new (class extends Shape {
     context.rotate(rotation);
     context.drawImage(img, -w / 2, -h * 0.9);
     context.restore();
+
+    this.#accessories.forEach((s) => s.draw(context));
   }
 
   isDuckArea(x, y) {
@@ -146,7 +150,109 @@ const duck = new (class extends Shape {
     return checkInsideUsingRayCasting([lt, rt, rb, lb], { x, y });
   }
 
-  update() {}
+  quak() {
+    const speaking = this.#accessories.filter((s) => s.type === 'SPEECH');
+    if (speaking.length > 3) return;
+
+    const SPEECH_SET = [
+      {
+        text: `🐤`,
+      },
+      {
+        text: `🐤`,
+      },
+      {
+        text: `'QUAK'`,
+      },
+      {
+        text: `'QUAK'`,
+      },
+      {
+        text: '...',
+      },
+    ];
+    const additionalRotate = randomRange(degToRadian(-60), degToRadian(60));
+    const text = new (class extends Shape {
+      type = 'SPEECH';
+      id = Date.now();
+
+      text = '';
+      color = '#494B4D';
+      opacity = 0;
+      scale = 0.6;
+
+      status = null;
+
+      constructor() {
+        super();
+
+        const speech =
+          SPEECH_SET[Math.floor(randomRange(0, SPEECH_SET.length))];
+        this.text = speech.text;
+        this.status = 'FADE-IN';
+      }
+
+      draw(context) {
+        const { x, y, img, rotation } = duck.props;
+
+        context.save();
+        context.font = '24px "Bebas Neue"';
+        const col = this.color + this.opacity.toString(16).padStart(2, '0');
+        context.fillStyle = col;
+        const textSize = context.measureText(this.text);
+
+        context.translate(x, y);
+        context.rotate(rotation * 1.8 + additionalRotate);
+        context.scale(this.scale, this.scale);
+        context.fillText(this.text, -textSize.width, -img.height - 24);
+        context.restore();
+      }
+      update() {
+        if (this.status === 'FADE-IN') {
+          if (this.opacity >= 255) {
+            this.status = 'HOLD';
+            setTimeout(
+              () => (this.status = 'FADE-OUT'),
+              this.text.length * 200
+            );
+            return;
+          }
+          this.opacity = Math.min(255, Math.floor((this.opacity + 1) ** 1.3));
+          this.scale = Math.min(1, this.scale * 1.07);
+          return;
+        }
+
+        if (this.status === 'FADE-OUT') {
+          if (this.opacity <= 1) {
+            this.status = 'REMOVE';
+            return;
+          }
+          this.opacity = Math.max(0, Math.floor((this.opacity + 1) * 0.6));
+          return;
+        }
+
+        if (this.status === 'REMOVE') {
+          duck.removeAccessory(this);
+          return;
+        }
+      }
+      collision() {}
+    })();
+
+    this.addAccessory(text);
+  }
+
+  addAccessory(shape) {
+    this.#accessories.push(shape);
+  }
+
+  removeAccessory(shape) {
+    this.#accessories = this.#accessories.filter((s) => s.id !== shape.id);
+  }
+
+  update() {
+    this.#accessories.forEach((s) => s.update());
+  }
   collision() {}
 })();
 line.floating(duck, 0.8);
@@ -239,7 +345,7 @@ canvas.addEventListener('click', (e) => {
   const isDuckClicked = duck.isDuckArea(e.clientX, e.clientY);
   if (!isDuckClicked) return;
 
-  console.log('-----------------QUAK!');
+  duck.quak();
 });
 
 window.addEventListener('resize', (e) => {
@@ -355,4 +461,12 @@ function checkInsideUsingRayCasting(polygon, { x, y }) {
   }
 
   return intersections % 2 !== 0;
+}
+
+function randomRange(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+function degToRadian(deg) {
+  return deg * (Math.PI / 180);
 }
