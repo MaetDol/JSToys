@@ -55,7 +55,7 @@ const cursor = new (class extends Dot {
   conflict(dot) {
     // 계산식이 복잡해짐에 따라, 필요 케이스가 아니라면 미리 리턴한다
     // 마우스 x 좌표가 해당 점과 충돌할만한 거리가 아니라면 미리 리턴한다
-    const pad = this.r * 2;
+    const pad = this.r * 1.5;
     const inXRange1 = this.prevX - pad < dot.x && dot.x < this.x + pad;
     const inXRange2 = this.prevX + pad > dot.x && dot.x > this.x - pad;
     if (!inXRange1 && !inXRange2) return false;
@@ -78,6 +78,19 @@ const cursor = new (class extends Dot {
     if (dist < this.r + pad) return true;
 
     return false;
+  }
+
+  update() {
+    this.v *= 0.6;
+
+    const diffY = this.y - this.prevY;
+    if (diffY !== 0) {
+      let speed = threshold(this.v + diffY, 30, -30);
+      // 아래에서 위로 가는 경우, 감속
+      if (Math.sign(diffY) < 0) speed *= 0.6;
+
+      this.v = speed;
+    }
   }
 })({ id: -3, x: -50, y: -50, r: 20, color: '#00000088' });
 
@@ -258,3 +271,9 @@ const resetCursorPrev = debounce(() => {
   cursor.prevX = cursor.x;
   cursor.prevY = cursor.y;
 }, 1000 / 60);
+
+function threshold(value, maxLimit, minLimit) {
+  if (value > maxLimit) return maxLimit;
+  if (value < minLimit) return minLimit;
+  return value;
+}

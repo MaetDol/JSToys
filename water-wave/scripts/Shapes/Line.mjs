@@ -238,11 +238,17 @@ class Line extends Shape {
 
       const prev = dots[idx - 1] || start;
       const dot = dots[idx] || end;
+
+      // 이미 관성이 충분한 상황이라면, 충돌 무시
+      if (Math.abs(dot.v) > 5) continue;
+      // 이어진 점과 위상차가 크다면, 충돌 무시
+      if (Math.abs(prev.y - dot.y) > 20) continue;
+
       const { cp1, cp2 } = dot.bezier;
       const t = (s.x - prev.x) / dotDistance;
       const conflictPoint = this.bezierCurveFormula(t, prev, dot, cp1, cp2);
       if (s.conflict(conflictPoint)) {
-        const f = Math.abs((conflictPoint.y - s.y) * 0.2);
+        const f = (conflictPoint.y - s.y) * 0.2 + s.v;
         dot.v += f * t;
         prev.v += f * (1 - t);
       }
