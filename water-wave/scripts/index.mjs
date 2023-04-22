@@ -44,10 +44,40 @@ const sub2 = new SubLine({
 });
 
 const cursor = new (class extends Dot {
+  prevX = 0;
+  prevY = 0;
+
+  // 기울기
+  slope = 0;
+  // 절편
+  intercept = 0;
+
   conflict(dot) {
-    const { x, y, r } = this;
-    const distance = Math.sqrt((dot.x - x) ** 2 + (dot.y - y) ** 2);
-    return distance < r;
+    // 계산식이 복잡해짐에 따라, 필요 케이스가 아니라면 미리 리턴한다
+    // 마우스 x 좌표가 해당 점과 충돌할만한 거리가 아니라면 미리 리턴한다
+    const pad = this.r * 2;
+    const inXRange1 = this.prevX - pad < dot.x && dot.x < this.x + pad;
+    const inXRange2 = this.prevX + pad > dot.x && dot.x > this.x - pad;
+    if (!inXRange1 && !inXRange2) return false;
+
+    const inYRange1 = this.prevY - pad < dot.y && dot.y < this.y + pad;
+    const inYRange2 = this.prevY + pad > dot.y && dot.y > this.y - pad;
+    if (!inYRange1 && !inYRange2) return false;
+
+    if (cursor.x === cursor.prevX) return true;
+    if (cursor.y === cursor.prevY) return true;
+
+    // 충돌을 확인할 점과 마우스가 움직인 직선의
+    // 가장 가까운 점의 좌표를 구한다
+    const dx =
+      (-cursor.intercept + dot.x / cursor.slope + dot.y) /
+      (cursor.slope + 1 / cursor.slope);
+    const dy = cursor.slope * dx + cursor.intercept;
+
+    const dist = distance({ x: dx, y: dy }, dot);
+    if (dist < this.r + pad) return true;
+
+    return false;
   }
 })({ id: -3, x: -50, y: -50, r: 20, color: '#00000088' });
 
@@ -147,8 +177,14 @@ const renderer = new Renderer(canvas.width, canvas.height, ctx, [
 renderer.render();
 
 canvas.addEventListener('mousemove', (e) => {
+  const prevX = cursor.x;
+  const prevY = cursor.y;
+
   cursor.x = e.clientX;
   cursor.y = e.clientY;
+
+  setLinearFunctionInfo(prevX, prevY);
+  resetCursorPrev();
 });
 
 window.addEventListener('resize', (e) => {
@@ -185,3 +221,40 @@ function waveLoop(line, queue) {
 const queue = new TaskQueue();
 waveLoop(line, queue);
 queue.consume();
+
+// ---- Utils, need to separate file
+
+function distance(dot1, dot2) {
+  return Math.sqrt((dot1.x - dot2.x) ** 2 + (dot1.y - dot2.y) ** 2);
+}
+
+function throttle(fn, duration) {
+  let running = false;
+  return (...args) => {
+    if (running) return;
+    running = true;
+    fn.apply(null, args);
+    setTimeout(() => (running = false), duration);
+  };
+}
+
+function debounce(fn, duration) {
+  let id = null;
+  return (...args) => {
+    clearTimeout(id);
+    id = setTimeout(() => fn.apply(null, args), duration);
+  };
+}
+
+const setLinearFunctionInfo = throttle((x, y) => {
+  cursor.prevX = x;
+  cursor.prevY = y;
+
+  cursor.slope = (cursor.y - y) / (cursor.x - x);
+  cursor.intercept = y - cursor.slope * x;
+}, 1000 / 60);
+
+const resetCursorPrev = debounce(() => {
+  cursor.prevX = cursor.x;
+  cursor.prevY = cursor.y;
+}, 1000 / 60);
