@@ -108,6 +108,7 @@ class Line extends Shape {
     return (dot1.y - dot2.y) / (dot1.x - dot2.x);
   }
 
+  // 절편(intercept)
   constBOf(gradient, dot) {
     return dot.y - gradient * dot.x;
   }
@@ -142,6 +143,9 @@ class Line extends Shape {
         const a = this.gradientOf(basePoint, d);
         const b = this.constBOf(a, d);
         const f = (x, y) => {
+          if (y - b === 0) {
+            return new Dot({ x, y });
+          }
           const cp_y = a * x + b;
           const isBetweenDots = cp_y * leftDirection < y * leftDirection;
           return new Dot(
