@@ -97,6 +97,7 @@ const cursor = new (class extends Dot {
 
 const duck = new (class extends Shape {
   #accessories = [];
+  scale = 1;
 
   constructor() {
     super();
@@ -116,6 +117,7 @@ const duck = new (class extends Shape {
     context.save();
     context.strokeStyle = 'black';
     context.translate(x, y);
+    context.scale(this.scale, this.scale);
     context.rotate(rotation);
     context.drawImage(img, -w / 2, -h * 0.9);
     context.restore();
@@ -239,10 +241,11 @@ const duck = new (class extends Shape {
         if (this.status === 'FADE-IN') {
           if (this.opacity >= 255) {
             this.status = 'HOLD';
-            setTimeout(
-              () => (this.status = 'FADE-OUT'),
-              this.text.length * 200
-            );
+            const duration =
+              this.textType === LIFE_QUOTE_TYPE
+                ? this.text.length * 80
+                : this.text.length * 200;
+            setTimeout(() => (this.status = 'FADE-OUT'), duration);
             return;
           }
           this.opacity = Math.min(255, Math.floor((this.opacity + 1) ** 1.3));
@@ -270,6 +273,10 @@ const duck = new (class extends Shape {
     this.addAccessory(text);
   }
 
+  squeeze() {
+    this.scale = 0.8;
+  }
+
   addAccessory(shape) {
     this.#accessories.push(shape);
   }
@@ -279,8 +286,12 @@ const duck = new (class extends Shape {
   }
 
   update() {
+    if (this.scale !== 1) {
+      this.scale += (1 - this.scale) * 0.2;
+    }
     this.#accessories.forEach((s) => s.update());
   }
+
   collision() {}
 })();
 line.floating(duck, 0.8);
@@ -374,6 +385,7 @@ canvas.addEventListener('click', (e) => {
   if (!isDuckClicked) return;
 
   duck.quak();
+  duck.squeeze();
 });
 
 window.addEventListener('resize', (e) => {

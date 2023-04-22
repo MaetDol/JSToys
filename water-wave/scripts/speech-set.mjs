@@ -7,6 +7,7 @@ const WaveSet = {
   PINCH: `${WAV}/duck-pinch.wav`,
   SIGH: `${WAV}/duck-sigh.wav`,
   TALK: `${WAV}/duck-talk.wav`,
+  LOREM_IPSUM: `${WAV}/lorem-ipsum.wav`,
 };
 
 // 미리 로딩해놓기 위한 코드
@@ -92,6 +93,7 @@ const LIFE_QUOTES = [
 바로 '나'이다
 그러므로 특별한 이유 없이 누군가 미워졌다면
 자신을 의심하라`,
+    soundUrl: WaveSet.LOREM_IPSUM,
   },
   {
     type: LIFE_QUOTE_TYPE,
@@ -100,6 +102,7 @@ const LIFE_QUOTES = [
 "힘내요" 라고는 하지만
 어떻게 힘을 내야 할지 알 수가 없다
 힘을 낼 방법이 없어 슬퍼하고 있는데.`,
+    soundUrl: WaveSet.LOREM_IPSUM,
   },
 ];
 
