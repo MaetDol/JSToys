@@ -1,5 +1,6 @@
 import Renderer from './Renderer.mjs';
 import { Bubble, Dot, Line, Shape, SubLine } from './Shapes/all.mjs';
+import { SPEECH_SET } from './speech-set.mjs';
 import TaskQueue, { Task } from './TaskQueue.mjs';
 
 const canvas = document.querySelector('canvas');
@@ -154,29 +155,14 @@ const duck = new (class extends Shape {
     const speaking = this.#accessories.filter((s) => s.type === 'SPEECH');
     if (speaking.length > 3) return;
 
-    const SPEECH_SET = [
-      {
-        text: `🐤`,
-      },
-      {
-        text: `🐤`,
-      },
-      {
-        text: `'QUAK'`,
-      },
-      {
-        text: `'QUAK'`,
-      },
-      {
-        text: '...',
-      },
-    ];
     const additionalRotate = randomRange(degToRadian(-60), degToRadian(60));
     const text = new (class extends Shape {
       type = 'SPEECH';
       id = Date.now();
 
       text = '';
+      soundUrl = null;
+
       color = '#494B4D';
       opacity = 0;
       scale = 0.6;
@@ -189,7 +175,18 @@ const duck = new (class extends Shape {
         const speech =
           SPEECH_SET[Math.floor(randomRange(0, SPEECH_SET.length))];
         this.text = speech.text;
+        this.soundUrl = speech.soundUrl;
         this.status = 'FADE-IN';
+
+        this.play();
+      }
+
+      play() {
+        if (!this.soundUrl) return;
+
+        console.log(this.soundUrl);
+        const audio = new Audio(this.soundUrl);
+        audio.play();
       }
 
       draw(context) {
