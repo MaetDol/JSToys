@@ -365,14 +365,21 @@ const bubble = new (class {
 const b = new BeachBall({
   // x: 100 + Math.random() * 1200,
   x: 900,
-  y: 600,
+  y: 100,
   r: 50,
+  weight: 30,
+});
+const b2 = new BeachBall({
+  x: 800,
+  y: 600,
+  r: 40,
+  weight: 15,
 });
 
 const renderer = new Renderer(canvas.width, canvas.height, ctx, [
   [waveText],
   [sub1, sub2],
-  [b, line, cursor],
+  [b, b2, line, cursor],
   bubble.group,
 ]);
 renderer.render();

@@ -3,18 +3,23 @@ import Line from './Line.mjs';
 import Shape from './Shape.mjs';
 
 export class BeachBall extends Shape {
-  props = {};
+  props = {
+    x: 0,
+    y: 0,
+    weight: 0,
+  };
   delta = {
     x: 0,
     y: 0,
   };
 
-  constructor({ x, y, r }) {
+  constructor({ x, y, r, weight }) {
     super();
     this.props = {
       x,
       y,
       r,
+      weight,
     };
   }
 
@@ -33,17 +38,13 @@ export class BeachBall extends Shape {
   }
 
   update() {
-    console.log(this.delta.y);
     this.props.x += this.delta.x;
     this.props.y += this.delta.y;
 
-    if (Math.abs(this.delta.y) < 0.001) {
-      this.delta.y = 0;
-    } else {
-      this.delta.x *= 0.9;
-      this.delta.y *= 0.9;
-    }
-    this.delta.y += 1;
+    this.delta.x *= 0.81;
+    this.delta.y *= 0.81;
+
+    this.delta.y += this.props.weight * 0.1;
   }
 
   collision(shapes) {
@@ -52,29 +53,36 @@ export class BeachBall extends Shape {
     // 진행할 수 있게 개선
     shapes.forEach((shape) => {
       if (!shape instanceof Line) return;
-      shape.props.dots?.forEach((d) => {
-        if (!this._conflict(d)) return;
+      for (const d of shape.props.dots ?? []) {
+        if (!this._conflict(d)) continue;
 
         const { r, y } = this.props;
 
-        let dif = r - Math.abs(d.props.y - y);
-        let theta = 2 * Math.acos(dif / r);
-        let volumn = (theta - Math.sin(theta)) * r ** 2 * 0.5;
+        // 부력 계산
+        const distance = Math.abs(d.props.y - y);
         const area = Math.PI * r ** 2;
-        if (d.props.y < y) {
+
+        if (distance > r) {
+          this.delta.y -= area * 0.001;
+          return;
+        }
+
+        let theta = 2 * Math.acos(distance / r);
+        let volumn = (theta - Math.sin(theta)) * r ** 2 * 0.5;
+        if (y > d.props.y) {
           volumn = area - volumn;
         }
-        if (isNaN(volumn)) this.delta.y -= area * 0.001;
-        else this.delta.y -= volumn * 0.001;
-      });
+
+        this.delta.y -= volumn * 0.001;
+        return;
+      }
     });
   }
 
   conflict() {}
 
   _conflict(shape) {
-    const { x, y, r: _r } = this.props;
-    const r = 30;
+    const { x, y, r } = this.props;
 
     if (shape === this) return false;
     if (!shape instanceof Dot) return false;
@@ -86,7 +94,7 @@ export class BeachBall extends Shape {
     }
     if (Math.abs(xDiff) > r) return false;
 
-    if (shape.props.y > y + r) return false;
+    if (y + r < shape.props.y) return false;
     // const yDiff = y - shape.props.y;
     // if (isNaN(yDiff)) return false;
     // if (Math.abs(yDiff) > r) return false;
