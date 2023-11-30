@@ -1,5 +1,6 @@
 import Renderer from './Renderer.mjs';
 import { Bubble, Dot, Line, Shape, SubLine } from './Shapes/all.mjs';
+import { BeachBall } from './Shapes/BeachBall.mjs';
 import { LIFE_QUOTE_TYPE, SPEECH_SET } from './speech-set.mjs';
 import TaskQueue, { Task } from './TaskQueue.mjs';
 
@@ -361,10 +362,17 @@ const bubble = new (class {
   }
 })({ start: line.props.start.x, end: line.props.end.x, bottom: canvas.height });
 
+const b = new BeachBall({
+  // x: 100 + Math.random() * 1200,
+  x: 900,
+  y: 200,
+  r: 50,
+});
+
 const renderer = new Renderer(canvas.width, canvas.height, ctx, [
   [waveText],
   [sub1, sub2],
-  [line, cursor],
+  [b, line, cursor],
   bubble.group,
 ]);
 renderer.render();
