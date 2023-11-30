@@ -33,16 +33,16 @@ export class BeachBall extends Shape {
   }
 
   update() {
+    console.log(this.delta.y);
     this.props.x += this.delta.x;
     this.props.y += this.delta.y;
 
     if (Math.abs(this.delta.y) < 0.001) {
       this.delta.y = 0;
     } else {
-      this.delta.x *= 0.98;
-      this.delta.y *= 0.98;
+      this.delta.x *= 0.9;
+      this.delta.y *= 0.9;
     }
-
     this.delta.y += 1;
   }
 
@@ -54,19 +54,18 @@ export class BeachBall extends Shape {
       if (!shape instanceof Line) return;
       shape.props.dots?.forEach((d) => {
         if (!this._conflict(d)) return;
-        this.delta.y *= -0.3;
 
         const { r, y } = this.props;
 
         let dif = r - Math.abs(d.props.y - y);
         let theta = 2 * Math.acos(dif / r);
-        let volumn = (theta * r ** 2) / 2;
+        let volumn = (theta - Math.sin(theta)) * r ** 2 * 0.5;
+        const area = Math.PI * r ** 2;
         if (d.props.y < y) {
-          debugger;
-          volumn = 2 * Math.PI * r - volumn;
+          volumn = area - volumn;
         }
-        console.log(volumn);
-        this.delta.y -= volumn * 0.0005;
+        if (isNaN(volumn)) this.delta.y -= area * 0.001;
+        else this.delta.y -= volumn * 0.001;
       });
     });
   }
@@ -87,9 +86,10 @@ export class BeachBall extends Shape {
     }
     if (Math.abs(xDiff) > r) return false;
 
-    const yDiff = y - shape.props.y;
-    if (isNaN(yDiff)) return false;
-    if (Math.abs(yDiff) > r) return false;
+    if (shape.props.y > y + r) return false;
+    // const yDiff = y - shape.props.y;
+    // if (isNaN(yDiff)) return false;
+    // if (Math.abs(yDiff) > r) return false;
 
     return true;
   }
