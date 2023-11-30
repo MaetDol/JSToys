@@ -367,7 +367,7 @@ const b = new BeachBall({
   x: 900,
   y: 100,
   r: 50,
-  weight: 30,
+  weight: 70,
 });
 const b2 = new BeachBall({
   x: 800,

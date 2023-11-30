@@ -171,6 +171,7 @@ class Line extends Shape {
       }
       direction = leftDirection;
 
+      // debug 모드 따로 만들기..
       context.save();
       context.beginPath();
       context.fillStyle = '#000000';
@@ -178,6 +179,7 @@ class Line extends Shape {
       context.fill();
       context.closePath();
       context.restore();
+      //
 
       water.bezierCurveTo(
         pairControlPoint.x,
@@ -240,6 +242,18 @@ class Line extends Shape {
     if (x < start.x || x > end.x) return -1;
 
     return Math.floor((x - start.x) / dotDistance);
+  }
+
+  nearestDotIndexOf(x) {
+    const assumedIndex = this.dotIndexOf(x);
+    if (assumedIndex === -1) return -1;
+
+    const dotX = this.props.dots[assumedIndex].props.x;
+    const halfGap = this.props.dotDistance / 2;
+
+    if (x > dotX + halfGap) return assumedIndex + 1;
+    if (x < dotX - halfGap) return assumedIndex - 1;
+    return assumedIndex;
   }
 
   collision(shapes) {

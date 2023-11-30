@@ -41,41 +41,54 @@ export class BeachBall extends Shape {
     this.props.x += this.delta.x;
     this.props.y += this.delta.y;
 
-    this.delta.x *= 0.81;
-    this.delta.y *= 0.81;
+    this.delta.x *= 0.85;
+    this.delta.y *= 0.85;
 
     this.delta.y += this.props.weight * 0.1;
   }
 
   collision(shapes) {
+    // 부력 가중치
+    const buoyancyWegiht = 0.001;
+
     // 두 점에 대해 충돌 계산을 할 경우 부력이 2배로 적용 될 것.
     // 추후 Line 에서 충돌 계산 메서드를 제공하고, 그걸 가져다 쓰는 방식으로
     // 진행할 수 있게 개선
     shapes.forEach((shape) => {
-      if (!shape instanceof Line) return;
-      for (const d of shape.props.dots ?? []) {
-        if (!this.#_conflict(d)) continue;
+      if (!(shape instanceof Line)) return;
 
-        const { r, y } = this.props;
+      const { r, x, y } = this.props;
+      const targetDotIndex = shape.nearestDotIndexOf(x);
+      if (targetDotIndex === -1) return;
 
-        // 부력 계산
-        const distance = Math.abs(d.props.y - y);
-        const area = Math.PI * r ** 2;
+      const dots = shape.props.dots ?? [];
+      const dot = dots[targetDotIndex];
+      if (!this.#_conflict(dot)) return;
 
-        if (distance > r) {
-          this.delta.y -= area * 0.001;
-          return;
-        }
+      // 부력 계산
+      const distance = Math.abs(dot.props.y - y);
+      const area = Math.PI * r ** 2;
 
-        let theta = 2 * Math.acos(distance / r);
-        let volumn = (theta - Math.sin(theta)) * r ** 2 * 0.5;
-        if (y > d.props.y) {
-          volumn = area - volumn;
-        }
-
-        this.delta.y -= volumn * 0.001;
+      // 물에 완전히 잠김
+      if (distance > r) {
+        this.delta.y -= area * buoyancyWegiht;
         return;
       }
+
+      let theta = 2 * Math.acos(distance / r);
+      let volumn = (theta - Math.sin(theta)) * r ** 2 * 0.5;
+      // 반 이상 물에 잠김
+      if (y > dot.props.y) {
+        volumn = area - volumn;
+      }
+      this.delta.y -= volumn * buoyancyWegiht;
+
+      // 기울기를 계산해 공이 굴러가게 한다
+      const prevDot = dots[targetDotIndex - 1];
+      const nextDot = dots[targetDotIndex + 1];
+      const leftSlope = dot.props.y - prevDot.props.y;
+      const rightSlope = nextDot.props.y - dot.props.y;
+      this.delta.x += (leftSlope + rightSlope) * 0.003;
     });
   }
 
@@ -85,7 +98,7 @@ export class BeachBall extends Shape {
     const { x, y, r } = this.props;
 
     if (shape === this) return false;
-    if (!shape instanceof Dot) return false;
+    if (!(shape instanceof Dot)) return false;
 
     const xDiff = x - shape.props.x;
     if (isNaN(xDiff)) {
@@ -95,9 +108,6 @@ export class BeachBall extends Shape {
     if (Math.abs(xDiff) > r) return false;
 
     if (y + r < shape.props.y) return false;
-    // const yDiff = y - shape.props.y;
-    // if (isNaN(yDiff)) return false;
-    // if (Math.abs(yDiff) > r) return false;
 
     return true;
   }
