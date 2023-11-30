@@ -54,7 +54,7 @@ export class BeachBall extends Shape {
     shapes.forEach((shape) => {
       if (!shape instanceof Line) return;
       for (const d of shape.props.dots ?? []) {
-        if (!this._conflict(d)) continue;
+        if (!this.#_conflict(d)) continue;
 
         const { r, y } = this.props;
 
@@ -81,7 +81,7 @@ export class BeachBall extends Shape {
 
   conflict() {}
 
-  _conflict(shape) {
+  #_conflict(shape) {
     const { x, y, r } = this.props;
 
     if (shape === this) return false;
