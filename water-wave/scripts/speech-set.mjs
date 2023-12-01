@@ -109,7 +109,7 @@ const LIFE_QUOTES = [
 export const SPEECH_SET = [
   ...CHICK_EMOJI,
   ...QUAK_TEXT,
-  ...LIFE_QUOTES,
+  // ...LIFE_QUOTES,
   {
     text: '...',
   },
