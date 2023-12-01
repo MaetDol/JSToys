@@ -7,20 +7,32 @@ export class BeachBall extends Shape {
     x: 0,
     y: 0,
     weight: 0,
+    scale: 1,
   };
   delta = {
     x: 0,
     y: 0,
   };
+  isSvgLoaded = false;
 
-  constructor({ x, y, r, weight }) {
+  SVG_PATH = './resources/svg/beachball_outline_bold.svg';
+
+  constructor({ x, y, scale, weight }) {
     super();
     this.props = {
       x,
       y,
-      r,
+      scale,
       weight,
+      img: new Image(),
     };
+    this.props.img.onload = this.#onSvgLoad.bind(this);
+    this.props.img.src = this.SVG_PATH;
+  }
+
+  #onSvgLoad() {
+    this.props.r = this.props.img.width / 2;
+    this.isSvgLoaded = true;
   }
 
   /**
@@ -28,16 +40,22 @@ export class BeachBall extends Shape {
    * @param {CanvasRenderingContext2D} ctx
    */
   draw(ctx) {
-    const { x, y, r } = this.props;
+    if (!this.isSvgLoaded) return;
 
-    ctx.beginPath();
-    ctx.fillStyle = '#555555';
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.closePath();
+    const { x, y, r, scale, img } = this.props;
+
+    ctx.save();
+
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.drawImage(img, -r, -r);
+
+    ctx.restore();
   }
 
   update() {
+    if (!this.isSvgLoaded) return;
+
     this.props.x += this.delta.x;
     this.props.y += this.delta.y;
 
@@ -48,6 +66,7 @@ export class BeachBall extends Shape {
   }
 
   collision(shapes) {
+    if (!this.isSvgLoaded) return;
     // 부력 가중치
     const buoyancyWegiht = 0.001;
 

@@ -366,13 +366,13 @@ const b = new BeachBall({
   // x: 100 + Math.random() * 1200,
   x: 900,
   y: 100,
-  r: 50,
+  scale: 1,
   weight: 70,
 });
 const b2 = new BeachBall({
   x: 800,
   y: 600,
-  r: 40,
+  scale: 0.8,
   weight: 15,
 });
 
