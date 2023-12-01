@@ -76,6 +76,7 @@ export class Duck extends Shape {
     );
     if (isTalkAboutLife) return;
 
+    const duck = this;
     const additionalRotate = randomRange(degToRadian(-60), degToRadian(60));
     const text = new (class extends Shape {
       accessoryType = 'SPEECH';
