@@ -7,23 +7,24 @@ export class BeachBall extends Shape {
     x: 0,
     y: 0,
     weight: 0,
-    scale: 1,
+    rotate: 0,
   };
   delta = {
     x: 0,
     y: 0,
+    rotate: 0,
   };
   isSvgLoaded = false;
 
   SVG_PATH = './resources/svg/beachball_outline_bold.svg';
 
-  constructor({ x, y, scale, weight }) {
+  constructor({ x = 0, y = 0, weight = 1, rotate = 0 }) {
     super();
     this.props = {
       x,
       y,
-      scale,
       weight,
+      rotate,
       img: new Image(),
     };
     this.props.img.onload = this.#onSvgLoad.bind(this);
@@ -42,12 +43,13 @@ export class BeachBall extends Shape {
   draw(ctx) {
     if (!this.isSvgLoaded) return;
 
-    const { x, y, r, scale, img } = this.props;
+    const { x, y, r, img, rotate } = this.props;
 
     ctx.save();
 
     ctx.translate(x, y);
-    ctx.scale(scale, scale);
+    ctx.rotate(rotate);
+
     ctx.drawImage(img, -r, -r);
 
     ctx.restore();
@@ -58,9 +60,11 @@ export class BeachBall extends Shape {
 
     this.props.x += this.delta.x;
     this.props.y += this.delta.y;
+    this.props.rotate += this.delta.rotate;
 
     this.delta.x *= 0.85;
     this.delta.y *= 0.85;
+    this.delta.rotate *= 0.95;
 
     this.delta.y += this.props.weight * 0.1;
   }
@@ -107,7 +111,9 @@ export class BeachBall extends Shape {
       const nextDot = dots[targetDotIndex + 1];
       const leftSlope = dot.props.y - prevDot.props.y;
       const rightSlope = nextDot.props.y - dot.props.y;
-      this.delta.x += (leftSlope + rightSlope) * 0.003;
+      const deltaX = (leftSlope + rightSlope) * 0.003;
+      this.delta.x += deltaX;
+      this.delta.rotate += deltaX * 0.05;
     });
   }
 
