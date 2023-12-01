@@ -234,6 +234,18 @@ class Line extends Shape {
     return Math.floor((x - start.x) / dotDistance);
   }
 
+  nearestDotIndexOf(x) {
+    const assumedIndex = this.dotIndexOf(x);
+    if (assumedIndex === -1) return -1;
+
+    const dotX = this.props.dots[assumedIndex].props.x;
+    const halfGap = this.props.dotDistance / 2;
+
+    if (x > dotX + halfGap) return assumedIndex + 1;
+    if (x < dotX - halfGap) return assumedIndex - 1;
+    return assumedIndex;
+  }
+
   collision(shapes) {
     const { start, end, dots, dotDistance } = this.props;
     for (const s of shapes) {
