@@ -362,13 +362,7 @@ const bubble = new (class {
   }
 })({ start: line.props.start.x, end: line.props.end.x, bottom: canvas.height });
 
-const b = new BeachBall({
-  // x: 100 + Math.random() * 1200,
-  x: 900,
-  y: 100,
-  weight: 70,
-});
-const b2 = new BeachBall({
+const beachball = new BeachBall({
   x: 800,
   y: 600,
   weight: 15,
@@ -377,7 +371,7 @@ const b2 = new BeachBall({
 const renderer = new Renderer(canvas.width, canvas.height, ctx, [
   [waveText],
   [sub1, sub2],
-  [b, b2, line, cursor],
+  [beachball, line, cursor],
   bubble.group,
 ]);
 renderer.render();

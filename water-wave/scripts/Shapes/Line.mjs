@@ -171,16 +171,6 @@ class Line extends Shape {
       }
       direction = leftDirection;
 
-      // debug 모드 따로 만들기..
-      context.save();
-      context.beginPath();
-      context.fillStyle = '#000000';
-      context.arc(d.x, d.y, 3, 0, Math.PI * 2);
-      context.fill();
-      context.closePath();
-      context.restore();
-      //
-
       water.bezierCurveTo(
         pairControlPoint.x,
         pairControlPoint.y,

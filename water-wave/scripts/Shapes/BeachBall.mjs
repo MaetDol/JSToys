@@ -67,6 +67,15 @@ export class BeachBall extends Shape {
     this.delta.rotate *= 0.95;
 
     this.delta.y += this.props.weight * 0.1;
+
+    const gap = 32;
+    if (this.props.x - this.props.r < gap) {
+      this.props.x = this.props.r + gap;
+      this.delta.x *= -1;
+    } else if (this.props.x + this.props.r > window.innerWidth - gap) {
+      this.props.x = window.innerWidth - this.props.r - gap;
+      this.deltaX *= -1;
+    }
   }
 
   collision(shapes) {
@@ -113,7 +122,7 @@ export class BeachBall extends Shape {
       const rightSlope = nextDot.props.y - dot.props.y;
       const deltaX = (leftSlope + rightSlope) * 0.003;
       this.delta.x += deltaX;
-      this.delta.rotate += deltaX * 0.05;
+      this.delta.rotate += deltaX * 0.02;
     });
   }
 
