@@ -53,7 +53,7 @@ class Line extends Shape {
       floated: [],
     };
 
-    this.resize(dot1, dot2, dotDistance, friction);
+    this.resize(dot1, dot2);
 
     // 페이지 첫 진입시 퐁당~ 하는 효과 주는거
     this.props.dots[~~(this.props.dots.length / 2)].v = 30;
@@ -63,6 +63,7 @@ class Line extends Shape {
   resize(
     startDot,
     endDot,
+    height = this.props.height,
     dotGap = this.props.dotDistance,
     friction = this.props.friction
   ) {
@@ -77,11 +78,14 @@ class Line extends Shape {
     );
 
     for (let i = 0; i < dots.length; i++) {
-      dots[i] = this.props.dots[i] ?? dots[i];
+      if (this.props.dots[i]) {
+        dots[i].v = this.props.dots[i].v;
+      }
     }
 
     this.props = {
       ...this.props,
+      height,
       dots,
       prevState,
       start: startDot,

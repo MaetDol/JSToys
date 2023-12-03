@@ -205,9 +205,9 @@ const resizeHandler = debounce((e) => {
   const h = e.target.innerHeight;
   canvas.width = renderer.width = w;
   canvas.height = renderer.height = h;
-  line.resize(startDot(h / 2, -200), endDot(h / 2, w + 200));
-  sub1.resize(startDot(h / 2, -200), endDot(h / 2, w + 200));
-  sub2.resize(startDot(h / 2, -200), endDot(h / 2, w + 200));
+  line.resize(startDot(h / 2, -200), endDot(h / 2, w + 200), h);
+  sub1.resize(startDot(h / 2, -200), endDot(h / 2, w + 200), h);
+  sub2.resize(startDot(h / 2, -200), endDot(h / 2, w + 200), h);
 }, 100);
 window.addEventListener('resize', resizeHandler);
 
