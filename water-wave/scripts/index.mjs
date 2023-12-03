@@ -3,6 +3,7 @@ import Renderer from './Renderer.mjs';
 import { Bubble, Dot, Line, Shape, SubLine } from './Shapes/all.mjs';
 import { BeachBall } from './Shapes/BeachBall.mjs';
 import TaskQueue, { Task } from './TaskQueue.mjs';
+import { debounce } from './utils.mjs';
 
 const canvas = document.querySelector('canvas');
 canvas.width = window.innerWidth;
@@ -178,7 +179,7 @@ const renderer = new Renderer(canvas.width, canvas.height, ctx, [
 ]);
 renderer.render();
 
-canvas.addEventListener('mousemove', (e) => {
+const mousemove = (e) => {
   const prevX = cursor.x;
   const prevY = cursor.y;
 
@@ -187,7 +188,8 @@ canvas.addEventListener('mousemove', (e) => {
 
   setLinearFunctionInfo(prevX, prevY);
   resetCursorPrev();
-});
+};
+canvas.addEventListener('mousemove', mousemove);
 
 canvas.addEventListener('click', (e) => {
   const isDuckClicked = duck.isDuckArea(e.clientX, e.clientY);
@@ -250,14 +252,6 @@ function throttle(fn, duration) {
     running = true;
     fn.apply(null, args);
     setTimeout(() => (running = false), duration);
-  };
-}
-
-function debounce(fn, duration) {
-  let id = null;
-  return (...args) => {
-    clearTimeout(id);
-    id = setTimeout(() => fn.apply(null, args), duration);
   };
 }
 
