@@ -21,12 +21,15 @@ export function checkInsideUsingRayCasting(polygon, { x, y }) {
 
   return intersections % 2 !== 0;
 }
+
 export function degToRadian(deg) {
   return deg * (Math.PI / 180);
 }
+
 export function randomRange(min, max) {
   return Math.random() * (max - min) + min;
 }
+
 export function getRotatedPoint(point, originPoint, radian) {
   const x = point.x - originPoint.x;
   const y = point.y - originPoint.y;
@@ -38,4 +41,12 @@ export function getRotatedPoint(point, originPoint, radian) {
   const movedY = originPoint.y + hypo * Math.sin(radian + theta);
 
   return { x: movedX, y: movedY };
+}
+
+export function debounce(fn, time) {
+  let id = null;
+  return (...args) => {
+    clearTimeout(id);
+    id = setTimeout(fn, time, ...args);
+  };
 }

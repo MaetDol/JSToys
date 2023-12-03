@@ -41,6 +41,57 @@ class DotOfLine extends Dot {
 class Line extends Shape {
   constructor({ dot1, dot2, friction = 0, dotDistance = 3, color, height }) {
     super();
+
+    this.props = {
+      start: dot1,
+      end: dot2,
+      dots: [],
+      friction,
+      color,
+      dotDistance,
+      height,
+      floated: [],
+    };
+
+    this.resize(dot1, dot2, dotDistance, friction);
+
+    // 페이지 첫 진입시 퐁당~ 하는 효과 주는거
+    this.props.dots[~~(this.props.dots.length / 2)].v = 30;
+    this.props.dots[~~(this.props.dots.length / 2)].v = 30;
+  }
+
+  resize(
+    startDot,
+    endDot,
+    dotGap = this.props.dotDistance,
+    friction = this.props.friction
+  ) {
+    const dots = this.createLineDotsByStartEndPoint(
+      startDot,
+      endDot,
+      dotGap,
+      friction
+    );
+    const prevState = dots.map(
+      ({ id, x, y, r, friction }) => new DotOfLine({ id, x, y, r, friction })
+    );
+
+    for (let i = 0; i < dots.length; i++) {
+      dots[i] = this.props.dots[i] ?? dots[i];
+    }
+
+    this.props = {
+      ...this.props,
+      dots,
+      prevState,
+      start: startDot,
+      end: endDot,
+      dotDistance: dotGap,
+      friction,
+    };
+  }
+
+  createLineDotsByStartEndPoint(dot1, dot2, dotDistance, friction) {
     const width = Math.abs(dot1.x - dot2.x) + Math.abs(dot1.y - dot2.y);
     const dotCount = Math.floor(width / dotDistance) - 1;
     const dots = Array(dotCount)
@@ -62,24 +113,8 @@ class Line extends Shape {
         cp2: d,
       };
     });
-    const prevState = dots.map(
-      ({ id, x, y, r, friction }) => new DotOfLine({ id, x, y, r, friction })
-    );
 
-    dots[~~(dots.length / 2)].v = 30;
-    dots[~~(dots.length / 2)].v = 30;
-
-    this.props = {
-      start: dot1,
-      end: dot2,
-      friction,
-      dots,
-      prevState,
-      color,
-      dotDistance,
-      height,
-      floated: [],
-    };
+    return dots;
   }
 
   bezierCurveFormula(t, start, end, cp1, cp2) {

@@ -11,8 +11,8 @@ const ctx = canvas.getContext('2d');
 
 const endX = canvas.width + 200;
 const halfHeight = canvas.height / 2;
-const startDot = (_) => new Dot({ id: -1, x: -200, y: halfHeight, r: 4 });
-const endDot = (_) => new Dot({ id: -2, x: endX, y: halfHeight, r: 4 });
+const startDot = (y = halfHeight, x = -200) => new Dot({ id: -1, x, y, r: 4 });
+const endDot = (y = halfHeight, x = endX) => new Dot({ id: -2, x, y, r: 4 });
 
 const line = new Line({
   dot1: startDot(),
@@ -165,7 +165,7 @@ const bubble = new (class {
 })({ start: line.props.start.x, end: line.props.end.x, bottom: canvas.height });
 
 const beachball = new BeachBall({
-  x: 800,
+  x: canvas.width * 0.8,
   y: 600,
   weight: 15,
 });
@@ -197,12 +197,17 @@ canvas.addEventListener('click', (e) => {
   duck.squeeze();
 });
 
-window.addEventListener('resize', (e) => {
+const resizeHandler = debounce((e) => {
+  // 디바운스 처리
   const w = e.target.innerWidth;
   const h = e.target.innerHeight;
   canvas.width = renderer.width = w;
   canvas.height = renderer.height = h;
-});
+  line.resize(startDot(h / 2, -200), endDot(h / 2, w + 200));
+  sub1.resize(startDot(h / 2, -200), endDot(h / 2, w + 200));
+  sub2.resize(startDot(h / 2, -200), endDot(h / 2, w + 200));
+}, 100);
+window.addEventListener('resize', resizeHandler);
 
 function waveLoop(line, queue) {
   const waveTask = (dot, delay) => {
