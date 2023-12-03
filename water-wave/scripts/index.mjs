@@ -101,11 +101,18 @@ const duck = new Duck();
 line.floating(duck, 0.8);
 
 const waveText = new (class extends Shape {
+  constructor(y) {
+    super();
+    this.props = {
+      y,
+    };
+  }
+
   draw(context) {
     context.fillStyle = '#494B4D';
     context.font = '120px "Bebas Neue"';
     let lastX = 120;
-    const top = halfHeight + 60;
+    const top = this.props.y + 60;
     [...'WAVE'].forEach((ch) => {
       const text = context.measureText(ch);
       context.fillText(ch, lastX, top);
@@ -114,7 +121,7 @@ const waveText = new (class extends Shape {
   }
   update() {}
   collision() {}
-})();
+})(halfHeight);
 
 const bubble = new (class {
   constructor({ start, end, bottom }) {
@@ -208,6 +215,8 @@ const resizeHandler = debounce((e) => {
   line.resize(startDot(h / 2, -200), endDot(h / 2, w + 200), h);
   sub1.resize(startDot(h / 2, -200), endDot(h / 2, w + 200), h);
   sub2.resize(startDot(h / 2, -200), endDot(h / 2, w + 200), h);
+
+  waveText.props.y = h / 2;
 }, 100);
 window.addEventListener('resize', resizeHandler);
 
