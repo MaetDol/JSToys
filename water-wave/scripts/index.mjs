@@ -186,17 +186,22 @@ const renderer = new Renderer(canvas.width, canvas.height, ctx, [
 ]);
 renderer.render();
 
-const mousemove = (e) => {
+const move = (x, y) => {
   const prevX = cursor.x;
   const prevY = cursor.y;
 
-  cursor.x = e.clientX;
-  cursor.y = e.clientY;
+  cursor.x = x;
+  cursor.y = y;
 
   setLinearFunctionInfo(prevX, prevY);
   resetCursorPrev();
 };
-canvas.addEventListener('mousemove', mousemove);
+canvas.addEventListener('mousemove', (e) => {
+  move(e.clientX, e.clientY);
+});
+canvas.addEventListener('touchmove', (e) => {
+  move(e.targetTouches[0].clientX, e.targetTouches[0].clientY);
+});
 
 canvas.addEventListener('click', (e) => {
   const isDuckClicked = duck.isDuckArea(e.clientX, e.clientY);
