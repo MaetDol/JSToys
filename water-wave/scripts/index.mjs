@@ -201,6 +201,7 @@ canvas.addEventListener('mousemove', (e) => {
 });
 canvas.addEventListener('touchmove', (e) => {
   move(e.targetTouches[0].clientX, e.targetTouches[0].clientY);
+  e.preventDefault();
 });
 
 canvas.addEventListener('click', (e) => {
