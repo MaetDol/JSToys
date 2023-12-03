@@ -98,7 +98,7 @@ const cursor = new (class extends Dot {
 })({ id: -3, x: -50, y: -50, r: 20, color: '#00000088' });
 
 const duck = new Duck();
-line.floating(duck, 0.8);
+line.floating(duck, 0.6);
 
 const waveText = new (class extends Shape {
   constructor(y) {
