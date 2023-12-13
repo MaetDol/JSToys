@@ -9,4 +9,4 @@
 - [make-to-pixel](https://MaetDol.github.io/JSToys/make-to-pixel)
 - [markdown-parser](https://MaetDol.github.io/JSToys/markdown-parser)
 - [pie-chart](https://MaetDol.github.io/JSToys/pie-chart)
-- 작업중 🛑 [water-wave](https://MaetDol.github.io/JSToys/water-wave)
+- [water-wave](https://MaetDol.github.io/JSToys/water-wave)
