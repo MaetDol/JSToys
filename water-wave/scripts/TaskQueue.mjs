@@ -1,78 +1,81 @@
 class Task {
-  constructor({ job, args, delay }) {
-    this.props = { job, args, delay };
-  }
+	constructor({ job, args, delay }) {
+		this.props = { job, args, delay };
+	}
 
-  do() {
-    const {job, args} = this.props;
-    job.apply( null, args );
-  }
+	do() {
+		const { job, args } = this.props;
+		job.apply(null, args);
+	}
 
-  get delay() { return this.props.delay; }
-  set delay(d) { this.props.delay = d; }
+	get delay() {
+		return this.props.delay;
+	}
+	set delay(d) {
+		this.props.delay = d;
+	}
 }
 
-
 class TaskQueue {
-  constructor() {
-    this.queue = [];
-    this.paused = false;
-    this.running = false;
+	constructor() {
+		this.queue = [];
+		this.paused = false;
+		this.running = false;
 
-    document.addEventListener('visibilitychange', () => {
-      if( !document.hidden && this.running ) this.consume();
-      else if( this.running ) this.pause();
-    });
-  }
-  
-  add( task ) {
-    this.queue.push( task );
-  }
+		document.addEventListener('visibilitychange', () => {
+			if (!document.hidden && this.running) this.consume();
+			else if (this.running) this.pause();
+		});
+	}
 
-  consume() {
-    this.running = true;
-    this.stop = false;
+	add(task) {
+		this.queue.push(task);
+	}
 
-    this.loop();
-  }
+	consume() {
+		this.running = true;
+		this.stop = false;
 
-  loop() {
-    const task = this.queue.shift();
-    this.last = {
-      task,
-      start: new Date(),
-      id: setTimeout(() => {
-        task.do();
-        if( !this.queue.length ) {
-          this.running = false;
-          return;
-        }
-        this.loop();
-      }, task.delay )
-    };
-  }
+		this.loop();
+	}
 
-  pause() {
-    if( !this.running ) return;
+	loop() {
+		const task = this.queue.shift();
+		this.last = {
+			task,
+			start: new Date(),
+			id: setTimeout(() => {
+				task.do();
+				if (!this.queue.length) {
+					this.running = false;
+					return;
+				}
+				this.loop();
+			}, task.delay),
+		};
+	}
 
-    this.paused = true;
-    const {task, start, id} = this.last;
-    task.delay -= new Date() - start;
-    this.queue.unshift( task );
+	pause() {
+		if (!this.running) return;
 
-    this.last = {};
-    clearTimeout( id );
-  }
-  
-  flush() {
-    if( this.running ) this.pause();
+		this.paused = true;
+		const { task, start, id } = this.last;
+		task.delay -= new Date() - start;
+		this.queue.unshift(task);
 
-    this.running = false;
-    this.paused = false;
-    this.last = {};
-    this.queue = [];
-  }
+		this.last = {};
+		clearTimeout(id);
+	}
+
+	flush() {
+		if (this.running) this.pause();
+
+		this.running = false;
+		this.paused = false;
+		this.last = {};
+		this.queue = [];
+	}
 }
 
 export default TaskQueue;
-export {Task};
+export { Task };
