@@ -1,9 +1,12 @@
 class Renderer {
   #shapes;
+
   #FRAME_RATE = 60;
   #FRAME_INTERVAL = Math.floor(1000 / this.#FRAME_RATE);
   #lastFrameTimestamp = null;
-  fps = 0;
+
+  #startedAt = null;
+  #frameCount = 0;
 
   constructor(w, h, context, layers) {
     this.layers = layers;
@@ -19,17 +22,33 @@ class Renderer {
     this.h = h;
   }
 
-  render(timestamp) {
-    if (!this.#lastFrameTimestamp) {
-      this.#lastFrameTimestamp = timestamp;
-    }
+  get fps() {
+    return (
+      (this.#frameCount / (document.timeline.currentTime - this.#startedAt)) *
+      1000
+    );
+  }
+
+  render() {
+    this.#startedAt = document.timeline.currentTime;
+    this.#lastFrameTimestamp = document.timeline.currentTime;
+    this.loopRender();
+  }
+
+  drawAnimationFrame(timestamp) {
+    this.loopRender();
 
     const interval = timestamp - this.#lastFrameTimestamp;
     if (interval < this.#FRAME_INTERVAL) {
-      this.loopRender();
       return;
     }
 
+    this.#frameCount++;
+    // 해당 프레임 렌더링 밀린 시간만큼 조정
+    this.#lastFrameTimestamp =
+      document.timeline.currentTime - (interval % this.#FRAME_INTERVAL);
+
+    // Draw
     this.ctx.clearRect(0, 0, this.w, this.h);
 
     this.layers.forEach((layer) => {
@@ -40,14 +59,10 @@ class Renderer {
 
       layer.forEach((s) => s.update());
     });
-
-    this.fps = 1000 / interval;
-    this.#lastFrameTimestamp = timestamp;
-    this.loopRender();
   }
 
   loopRender() {
-    requestAnimationFrame((timestamp) => this.render(timestamp));
+    requestAnimationFrame((timestamp) => this.drawAnimationFrame(timestamp));
   }
 }
 
