@@ -1,7 +1,7 @@
 class Renderer {
   #shapes;
   #FRAME_RATE = 60;
-  #FRAME_INTERVAL = 1000 / this.#FRAME_RATE;
+  #FRAME_INTERVAL = Math.floor(1000 / this.#FRAME_RATE);
   #lastFrameTimestamp = null;
   fps = 0;
 
